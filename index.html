@@ -1,40 +1,344 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-Hans">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Hello World</title>
+    <title>每日推荐股票看板</title>
     <style>
+      :root {
+        color-scheme: light;
+        font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+        --bg: #f3f5fb;
+        --card: #ffffff;
+        --accent: #2563eb;
+        --text: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+      }
+      * {
+        box-sizing: border-box;
+      }
       body {
         margin: 0;
-        font-family: "Helvetica Neue", Arial, sans-serif;
-        display: grid;
-        place-items: center;
-        min-height: 100vh;
-        background: #f5f7fb;
-        color: #1f2937;
+        background: var(--bg);
+        color: var(--text);
+      }
+      header {
+        padding: 2.5rem 1.5rem 1.5rem;
+        text-align: center;
+      }
+      header h1 {
+        margin: 0 0 0.75rem;
+        font-size: clamp(1.8rem, 3vw, 2.6rem);
+      }
+      header p {
+        margin: 0.35rem 0;
+        color: var(--muted);
       }
       main {
-        text-align: center;
-        padding: 2rem 3rem;
-        border-radius: 16px;
-        background: #ffffff;
-        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 1.5rem 3rem;
       }
-      h1 {
-        margin: 0 0 0.5rem;
-        font-size: 2.5rem;
+      .panel {
+        background: var(--card);
+        border-radius: 18px;
+        padding: 1.5rem;
+        box-shadow: 0 20px 35px rgba(15, 23, 42, 0.08);
       }
-      p {
-        margin: 0;
-        font-size: 1.1rem;
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.25rem;
+      }
+      .search {
+        display: flex;
+        flex: 1 1 320px;
+        gap: 0.75rem;
+        align-items: center;
+      }
+      .search input {
+        flex: 1;
+        padding: 0.65rem 0.9rem;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        font-size: 0.95rem;
+      }
+      .search button {
+        padding: 0.65rem 1rem;
+        border-radius: 10px;
+        border: none;
+        background: var(--accent);
+        color: #fff;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .meta {
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+      .table-wrap {
+        overflow-x: auto;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 800px;
+      }
+      thead {
+        background: #f8fafc;
+        text-align: left;
+      }
+      th,
+      td {
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.95rem;
+        vertical-align: top;
+      }
+      th {
+        font-weight: 600;
+      }
+      tbody tr:hover {
+        background: #f1f5ff;
+      }
+      .tag {
+        display: inline-flex;
+        padding: 0.2rem 0.6rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: #e0e7ff;
+        color: #3730a3;
+      }
+      footer {
+        margin-top: 1.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      @media (max-width: 720px) {
+        header {
+          text-align: left;
+        }
+        .toolbar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .search {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .search button {
+          width: 100%;
+        }
       }
     </style>
   </head>
   <body>
+    <header>
+      <h1>每日推荐股票看板</h1>
+      <p>自动在美东时间 08:50 生成推荐，并在新的一天清理昨日数据。</p>
+      <p>最多展示 20 条记录，可按关键词筛选。</p>
+    </header>
+
     <main>
-      <h1>Hello, World!</h1>
-      <p>Your GitHub Pages site is live.</p>
+      <section class="panel">
+        <div class="toolbar">
+          <div class="search">
+            <input
+              id="filterInput"
+              type="search"
+              placeholder="输入股票代码、理由或推荐人进行筛选"
+              aria-label="筛选推荐"
+            />
+            <button id="refreshButton" type="button">立即刷新</button>
+          </div>
+          <div class="meta" id="lastUpdated">最后更新：--</div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>股票</th>
+                <th>推荐买入价</th>
+                <th>目标价</th>
+                <th>推荐理由</th>
+                <th>推荐人</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+
+        <footer>
+          <div>共 <span class="tag" id="rowCount">0</span> 条推荐</div>
+          <div>数据每日自动研究生成（当前为前端示例数据）。</div>
+        </footer>
+      </section>
     </main>
+
+    <script>
+      const MAX_ROWS = 20;
+      const STORAGE_KEY = "daily-stock-recs";
+      const STORAGE_DATE_KEY = "daily-stock-recs-date";
+
+      const stocks = [
+        "AAPL",
+        "MSFT",
+        "GOOGL",
+        "AMZN",
+        "TSLA",
+        "NVDA",
+        "META",
+        "BABA",
+        "TSM",
+        "AMD",
+        "NFLX",
+        "INTC",
+        "PDD",
+        "ORCL",
+        "ADBE",
+        "SHOP",
+        "CRM",
+        "COIN",
+        "PLTR",
+        "ASML",
+        "AVGO",
+        "JPM",
+      ];
+
+      const reasons = [
+        "新产品周期带来利润改善",
+        "技术面突破关键阻力位",
+        "机构上调盈利预期",
+        "估值回到历史区间低位",
+        "行业景气度持续上行",
+        "现金流稳健且回购力度增加",
+        "政策利好推动需求增长",
+        "基本面改善叠加催化事件",
+        "订单能见度提升",
+        "市场情绪回暖",
+      ];
+
+      const recommenders = ["晨星策略组", "蓝海研究院", "趋势量化团队", "北极星投研", "红杉资本顾问", "聚焦财报分析"];
+
+      const formatter = new Intl.DateTimeFormat("zh-CN", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      const tableBody = document.getElementById("tableBody");
+      const filterInput = document.getElementById("filterInput");
+      const rowCount = document.getElementById("rowCount");
+      const lastUpdated = document.getElementById("lastUpdated");
+      const refreshButton = document.getElementById("refreshButton");
+
+      const getTodayKey = () => {
+        const now = new Date();
+        return `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+      };
+
+      const randomBetween = (min, max) =>
+        Math.round((Math.random() * (max - min) + min) * 100) / 100;
+
+      const generateResearchRows = () => {
+        const sample = [...stocks].sort(() => 0.5 - Math.random()).slice(0, MAX_ROWS);
+        return sample.map((symbol) => {
+          const buyPrice = randomBetween(60, 260);
+          const targetPrice = randomBetween(buyPrice * 1.1, buyPrice * 1.35);
+          return {
+            symbol,
+            buyPrice: `$${buyPrice}`,
+            targetPrice: `$${targetPrice}`,
+            reason: reasons[Math.floor(Math.random() * reasons.length)],
+            recommender: recommenders[Math.floor(Math.random() * recommenders.length)],
+          };
+        });
+      };
+
+      const loadData = () => {
+        const savedDate = localStorage.getItem(STORAGE_DATE_KEY);
+        const today = getTodayKey();
+        if (savedDate !== today) {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          return JSON.parse(stored);
+        }
+
+        const fresh = generateResearchRows();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
+        localStorage.setItem(STORAGE_DATE_KEY, today);
+        return fresh;
+      };
+
+      let data = loadData();
+
+      const renderRows = (rows) => {
+        tableBody.innerHTML = rows
+          .map(
+            (row) => `
+            <tr>
+              <td>${row.symbol}</td>
+              <td>${row.buyPrice}</td>
+              <td>${row.targetPrice}</td>
+              <td>${row.reason}</td>
+              <td>${row.recommender}</td>
+            </tr>
+          `,
+          )
+          .join("");
+        rowCount.textContent = rows.length;
+      };
+
+      const updateLastUpdated = () => {
+        lastUpdated.textContent = `最后更新：${formatter.format(new Date())}`;
+      };
+
+      const applyFilter = () => {
+        const keyword = filterInput.value.trim();
+        if (!keyword) {
+          renderRows(data);
+          return;
+        }
+        const lower = keyword.toLowerCase();
+        const filtered = data.filter((row) =>
+          [row.symbol, row.reason, row.recommender].some((item) =>
+            item.toLowerCase().includes(lower),
+          ),
+        );
+        renderRows(filtered);
+      };
+
+      const refreshData = () => {
+        data = generateResearchRows();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        localStorage.setItem(STORAGE_DATE_KEY, getTodayKey());
+        applyFilter();
+        updateLastUpdated();
+      };
+
+      filterInput.addEventListener("input", applyFilter);
+      refreshButton.addEventListener("click", refreshData);
+
+      renderRows(data);
+      updateLastUpdated();
+    </script>
   </body>
 </html>
