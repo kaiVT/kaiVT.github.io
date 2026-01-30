@@ -1,937 +1,429 @@
 <!doctype html>
 <html lang="zh-Hans">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>每日推荐股票看板</title>
-    <style>
-      :root {
-        color-scheme: light;
-        font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
-        --bg: #f3f5fb;
-        --card: #ffffff;
-        --accent: #2563eb;
-        --accent2: #7c3aed;
-        --text: #0f172a;
-        --muted: #64748b;
-        --border: #e2e8f0;
-        --shadow: 0 20px 35px rgba(15, 23, 42, 0.08);
-      }
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>每日推荐股票看板</title>
 
-      * { box-sizing: border-box; }
+  <style>
+    :root{
+      --bg:#ffffff;
+      --subtle:#f6f6f5;
+      --text:#111;
+      --muted:#6b7280;
+      --border:#e6e6e3;
+      --shadow: 0 10px 30px rgba(0,0,0,.08);
+      --radius:12px;
+      font-family: ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    }
+    body{ margin:0; background:var(--subtle); color:var(--text); }
+    .wrap{ max-width:1100px; margin:0 auto; padding:20px 14px 50px; }
+    .card{
+      background:var(--bg); border:1px solid var(--border);
+      border-radius:var(--radius); box-shadow: var(--shadow);
+    }
+    header{ padding:18px 18px 10px; }
+    h1{ margin:0 0 6px; font-size:22px; font-weight:750; letter-spacing:.2px;}
+    .desc{ margin:0; color:var(--muted); font-size:14px; line-height:1.5; }
 
-      body {
-        margin: 0;
-        background: radial-gradient(1200px 500px at 20% -10%, rgba(37,99,235,0.12), transparent 60%),
-                    radial-gradient(1000px 450px at 95% 0%, rgba(124,58,237,0.10), transparent 55%),
-                    var(--bg);
-        color: var(--text);
-      }
+    .toolbar{
+      display:flex; gap:10px; flex-wrap:wrap;
+      padding:14px 18px; border-top:1px solid var(--border);
+      align-items:center; justify-content:space-between;
+    }
+    .left{ display:flex; gap:10px; flex:1 1 420px; align-items:center; }
+    input[type="search"]{
+      flex:1; padding:10px 12px; border:1px solid var(--border); border-radius:10px;
+      font-size:14px; outline:none; background:#fff;
+    }
+    button{
+      padding:10px 12px; border-radius:10px; border:1px solid var(--border);
+      background:#fff; cursor:pointer; font-weight:650;
+    }
+    button.primary{ background:#111; color:#fff; border-color:#111; }
+    .meta{ color:var(--muted); font-size:13px; }
 
-      header {
-        padding: 2.6rem 1.5rem 1.3rem;
-        max-width: 1100px;
-        margin: 0 auto;
-      }
+    .table-wrap{ overflow:auto; border-top:1px solid var(--border); }
+    table{ width:100%; min-width:940px; border-collapse:collapse; }
+    th,td{ padding:12px 14px; border-bottom:1px solid var(--border); font-size:14px; vertical-align:top; }
+    th{ text-align:left; color:#111; background:#fff; position:sticky; top:0; z-index:1; }
+    tbody tr{ cursor:pointer; }
+    tbody tr:hover{ background:#fafafa; }
 
-      .hero {
-        background: linear-gradient(135deg, rgba(37,99,235,0.10), rgba(124,58,237,0.08));
-        border: 1px solid rgba(226,232,240,0.9);
-        border-radius: 20px;
-        padding: 1.4rem 1.4rem 1.2rem;
-        box-shadow: var(--shadow);
-      }
+    .ticker{ font-weight:750; letter-spacing:.2px; }
+    .muted{ color:var(--muted); }
+    .num{ font-variant-numeric: tabular-nums; white-space:nowrap; }
 
-      header h1 {
-        margin: 0 0 0.5rem;
-        font-size: clamp(1.8rem, 3vw, 2.6rem);
-        letter-spacing: 0.4px;
-      }
+    .scoreBox{ display:flex; flex-direction:column; gap:6px; }
+    .bar{ height:8px; background:#f1f1ef; border:1px solid var(--border); border-radius:999px; overflow:hidden; }
+    .bar span{ display:block; height:100%; width:0%; background:#111; }
+    .pill{
+      display:inline-flex; align-items:center; gap:6px;
+      border:1px solid var(--border); background:#fff;
+      border-radius:999px; padding:4px 10px; width:fit-content;
+      font-size:12px; color:#111; font-weight:650;
+    }
 
-      header p {
-        margin: 0.35rem 0;
-        color: var(--muted);
-        line-height: 1.55;
-      }
+    footer{
+      padding:12px 18px;
+      display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
+      color:var(--muted); font-size:13px;
+    }
 
-      main {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 1.1rem 1.5rem 3rem;
-      }
+    /* Drawer */
+    .overlay{ position:fixed; inset:0; background:rgba(0,0,0,.45); opacity:0; pointer-events:none; transition:200ms; }
+    .overlay.open{ opacity:1; pointer-events:auto; }
+    .drawer{
+      position:fixed; top:0; right:0; height:100%;
+      width:min(560px, 100%);
+      background:#fff; border-left:1px solid var(--border);
+      transform:translateX(105%); transition:220ms;
+      display:flex; flex-direction:column;
+      box-shadow: -10px 0 30px rgba(0,0,0,.12);
+    }
+    .drawer.open{ transform:translateX(0); }
+    .dhead{ padding:14px 16px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; gap:10px; }
+    .dtitle{ display:flex; flex-direction:column; gap:4px; }
+    .dtitle strong{ font-size:16px; }
+    .dtitle small{ color:var(--muted); }
+    .dbody{ padding:14px 16px; overflow:auto; display:flex; flex-direction:column; gap:12px; }
 
-      .panel {
-        background: var(--card);
-        border-radius: 18px;
-        padding: 1.25rem;
-        box-shadow: var(--shadow);
-        border: 1px solid rgba(226,232,240,0.9);
-      }
+    .seg{ display:flex; gap:8px; flex-wrap:wrap; }
+    .seg button{ padding:8px 10px; border-radius:999px; }
+    .seg button.active{ background:#111; color:#fff; border-color:#111; }
 
-      .toolbar {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.9rem;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 1rem;
-        position: sticky;
-        top: 0;
-        background: rgba(255,255,255,0.85);
-        backdrop-filter: blur(10px);
-        border-radius: 14px;
-        padding: 0.85rem;
-        border: 1px solid rgba(226,232,240,0.9);
-      }
+    .panel{ border:1px solid var(--border); border-radius:12px; padding:12px; }
+    #chart{ width:100%; height:360px; }
+    .hint{ font-size:13px; color:var(--muted); line-height:1.5; }
 
-      .search {
-        display: flex;
-        flex: 1 1 360px;
-        gap: 0.6rem;
-        align-items: center;
-      }
+    @media (max-width:720px){
+      table{ min-width:900px; }
+      #chart{ height:320px; }
+      .left{ flex-direction:column; align-items:stretch; }
+      .left button{ width:100%; }
+    }
+  </style>
+</head>
 
-      .search input {
-        flex: 1;
-        padding: 0.7rem 0.9rem;
-        border-radius: 12px;
-        border: 1px solid var(--border);
-        font-size: 0.95rem;
-        outline: none;
-      }
-      .search input:focus {
-        border-color: rgba(37,99,235,0.55);
-        box-shadow: 0 0 0 4px rgba(37,99,235,0.10);
-      }
-
-      .btn {
-        padding: 0.7rem 1rem;
-        border-radius: 12px;
-        border: none;
-        cursor: pointer;
-        font-weight: 700;
-        letter-spacing: 0.2px;
-      }
-      .btn-primary {
-        background: linear-gradient(135deg, var(--accent), var(--accent2));
-        color: #fff;
-      }
-      .btn-ghost {
-        background: #f8fafc;
-        color: #0f172a;
-        border: 1px solid var(--border);
-      }
-
-      .meta {
-        font-size: 0.9rem;
-        color: var(--muted);
-        display: flex;
-        gap: 0.6rem;
-        align-items: center;
-        flex-wrap: wrap;
-      }
-
-      .chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        padding: 0.25rem 0.65rem;
-        border-radius: 999px;
-        font-size: 0.82rem;
-        font-weight: 700;
-        background: #eef2ff;
-        color: #3730a3;
-        border: 1px solid rgba(55,48,163,0.15);
-      }
-
-      .table-wrap {
-        overflow-x: auto;
-        border-radius: 14px;
-        border: 1px solid var(--border);
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        min-width: 980px;
-      }
-
-      thead {
-        background: #f8fafc;
-        text-align: left;
-      }
-
-      th, td {
-        padding: 0.85rem 1rem;
-        border-bottom: 1px solid var(--border);
-        font-size: 0.95rem;
-        vertical-align: top;
-      }
-
-      th {
-        font-weight: 800;
-        color: #0b1220;
-        position: sticky;
-        top: 0;
-        background: #f8fafc;
-        z-index: 1;
-      }
-
-      tbody tr {
-        cursor: pointer;
-      }
-
-      tbody tr:hover {
-        background: #f1f5ff;
-      }
-
-      .muted { color: var(--muted); }
-
-      .score {
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-      }
-      .bar {
-        height: 10px;
-        border-radius: 999px;
-        background: #eef2ff;
-        border: 1px solid rgba(37,99,235,0.15);
-        overflow: hidden;
-      }
-      .bar > span {
-        display: block;
-        height: 100%;
-        width: 0%;
-        background: linear-gradient(90deg, #22c55e, #2563eb, #7c3aed);
-      }
-      .grade {
-        font-size: 0.82rem;
-        font-weight: 800;
-        padding: 0.15rem 0.55rem;
-        border-radius: 999px;
-        border: 1px solid rgba(15,23,42,0.12);
-        background: #fff;
-        width: fit-content;
-      }
-
-      .price {
-        font-variant-numeric: tabular-nums;
-        white-space: nowrap;
-      }
-
-      .action {
-        display: inline-flex;
-        gap: 0.4rem;
-        align-items: center;
-        justify-content: flex-end;
-        width: 100%;
-      }
-      .arrow {
-        width: 30px;
-        height: 30px;
-        border-radius: 10px;
-        border: 1px solid var(--border);
-        background: #fff;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 900;
-      }
-
-      footer {
-        margin-top: 1rem;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        align-items: center;
-        justify-content: space-between;
-        color: var(--muted);
-        font-size: 0.9rem;
-      }
-
-      /* Drawer */
-      .overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(2,6,23,0.55);
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 180ms ease;
-        z-index: 50;
-      }
-      .overlay.open {
-        opacity: 1;
-        pointer-events: auto;
-      }
-
-      .drawer {
-        position: fixed;
-        top: 0;
-        right: 0;
-        height: 100%;
-        width: min(560px, 100%);
-        background: #fff;
-        box-shadow: -20px 0 40px rgba(15,23,42,0.18);
-        transform: translateX(105%);
-        transition: transform 220ms ease;
-        z-index: 60;
-        display: flex;
-        flex-direction: column;
-      }
-      .drawer.open {
-        transform: translateX(0);
-      }
-
-      .drawer-head {
-        padding: 1rem 1rem 0.9rem;
-        border-bottom: 1px solid var(--border);
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 0.75rem;
-      }
-      .drawer-title {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-      }
-      .drawer-title strong {
-        font-size: 1.15rem;
-        letter-spacing: 0.3px;
-      }
-      .drawer-title small {
-        color: var(--muted);
-      }
-
-      .drawer-body {
-        padding: 1rem;
-        overflow: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 0.9rem;
-      }
-
-      .card {
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 0.9rem;
-        background: #fff;
-      }
-
-      .kv {
-        display: grid;
-        grid-template-columns: 110px 1fr;
-        gap: 0.35rem 0.7rem;
-        font-size: 0.95rem;
-        line-height: 1.55;
-      }
-      .kv div:nth-child(odd) { color: var(--muted); }
-
-      .tf {
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-        flex-wrap: wrap;
-      }
-
-      .tf button {
-        padding: 0.55rem 0.75rem;
-        border-radius: 12px;
-        border: 1px solid var(--border);
-        background: #fff;
-        cursor: pointer;
-        font-weight: 800;
-      }
-      .tf button.active {
-        border-color: rgba(37,99,235,0.6);
-        box-shadow: 0 0 0 4px rgba(37,99,235,0.10);
-      }
-
-      #chart {
-        width: 100%;
-        height: 360px;
-      }
-
-      .hint {
-        color: var(--muted);
-        font-size: 0.88rem;
-        line-height: 1.5;
-      }
-
-      @media (max-width: 720px) {
-        header { padding: 1.7rem 1rem 1rem; }
-        main { padding: 0.9rem 1rem 2.2rem; }
-        .toolbar { position: static; }
-        .search { flex-direction: column; align-items: stretch; }
-        .search .btn { width: 100%; }
-        table { min-width: 980px; }
-        #chart { height: 320px; }
-      }
-    </style>
-  </head>
-
-  <body>
-    <header>
-      <div class="hero">
+<body>
+  <div class="wrap">
+    <div class="card">
+      <header>
         <h1>每日推荐股票看板</h1>
-        <p>自动在美东时间 08:50 生成推荐，并在新的一天清理昨日数据。</p>
-        <p class="muted">点击任意一行可打开 K 线图（支持 日 / 周 / 年），并显示：现价虚线 + 目标价虚线。</p>
-      </div>
-    </header>
+        <p class="desc">Notion 风格极简版：点任意一行可打开 K 线（日/周/年），并显示现价虚线 + 目标价虚线。</p>
+      </header>
 
-    <main>
-      <section class="panel">
-        <div class="toolbar">
-          <div class="search">
-            <input
-              id="filterInput"
-              type="search"
-              placeholder="输入股票代码、理由、推荐人、等级(A/B/C)进行筛选"
-              aria-label="筛选推荐"
-            />
-            <button class="btn btn-primary" id="refreshButton" type="button">立即刷新</button>
-            <button class="btn btn-ghost" id="clearButton" type="button">清空筛选</button>
-          </div>
-
-          <div class="meta">
-            <span class="chip">最多 20 条</span>
-            <span class="chip">点击行看图</span>
-            <span id="lastUpdated">最后更新：--</span>
-          </div>
+      <div class="toolbar">
+        <div class="left">
+          <input id="q" type="search" placeholder="筛选：股票 / 理由 / 推荐人 / 等级(A/B/C)" />
+          <button class="primary" id="reload">刷新数据</button>
+          <button id="clear">清空</button>
         </div>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th style="width: 90px;">股票</th>
-                <th style="width: 200px;">推荐指数</th>
-                <th style="width: 120px;">现价</th>
-                <th style="width: 120px;">目标价</th>
-                <th>推荐理由</th>
-                <th style="width: 150px;">推荐人</th>
-                <th style="width: 90px; text-align:right;">打开</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-          </table>
-        </div>
-
-        <footer>
-          <div>共 <span class="chip" id="rowCount">0</span> 条推荐</div>
-          <div class="muted">说明：表格数据是前端示例；K线使用公开 CSV 数据源抓取（打开行时加载）。</div>
-        </footer>
-      </section>
-    </main>
-
-    <!-- Overlay + Drawer -->
-    <div class="overlay" id="overlay"></div>
-    <aside class="drawer" id="drawer" aria-hidden="true">
-      <div class="drawer-head">
-        <div class="drawer-title">
-          <strong id="drawerSymbol">--</strong>
-          <small id="drawerSub">--</small>
-        </div>
-        <button class="btn btn-ghost" id="closeDrawer" type="button">关闭</button>
+        <div class="meta" id="meta">最后更新：--</div>
       </div>
 
-      <div class="drawer-body">
-        <div class="card">
-          <div class="tf">
-            <button type="button" class="active" data-tf="D">日</button>
-            <button type="button" data-tf="W">周</button>
-            <button type="button" data-tf="Y">年</button>
-            <span class="hint" id="tfHint">日：最近 6 个月；周：周K聚合；年：最近 1 年</span>
-          </div>
-        </div>
-
-        <div class="card">
-          <div id="chart"></div>
-          <div class="hint" id="chartHint">加载中…</div>
-        </div>
-
-        <div class="card">
-          <div class="kv">
-            <div>推荐指数</div><div id="kvScore">--</div>
-            <div>现价</div><div id="kvNow">--</div>
-            <div>目标价</div><div id="kvTarget">--</div>
-            <div>推荐理由</div><div id="kvReason">--</div>
-            <div>推荐人</div><div id="kvBy">--</div>
-          </div>
-        </div>
-
-        <div class="hint">
-          备注：图上两条虚线分别代表「现价」和「目标价」。虚线绘制使用 Lightweight Charts 的 createPriceLine（lineStyle=Dashed）。 [oai_citation:2‡TradingView](https://tradingview.github.io/lightweight-charts/tutorials/how_to/price-line)
-        </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:90px;">股票</th>
+              <th style="width:210px;">推荐指数</th>
+              <th style="width:110px;">现价</th>
+              <th style="width:110px;">目标价</th>
+              <th>推荐理由</th>
+              <th style="width:160px;">推荐人</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
       </div>
-    </aside>
 
-    <!-- Lightweight Charts (TradingView) -->
-    <script src="https://unpkg.com/lightweight-charts@5.1.0/dist/lightweight-charts.standalone.production.js"></script>
+      <footer>
+        <div>共 <span id="count">0</span> 条</div>
+        <div>数据来源：GitHub Actions 生成 JSON（同域读取，无 CORS 问题）</div>
+      </footer>
+    </div>
+  </div>
 
-    <script>
-      /***********************
-       * 基础数据（示例）
-       ***********************/
-      const MAX_ROWS = 20;
-      const STORAGE_KEY = "daily-stock-recs-v2";
-      const STORAGE_DATE_KEY = "daily-stock-recs-date-v2";
+  <div class="overlay" id="overlay"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="dhead">
+      <div class="dtitle">
+        <strong id="dsym">--</strong>
+        <small id="dsub">--</small>
+      </div>
+      <button id="dclose">关闭</button>
+    </div>
 
-      const stocks = [
-        "AAPL","MSFT","GOOGL","AMZN","TSLA","NVDA","META","BABA","TSM","AMD","NFLX","INTC",
-        "PDD","ORCL","ADBE","SHOP","CRM","COIN","PLTR","ASML","AVGO","JPM",
-      ];
+    <div class="dbody">
+      <div class="panel">
+        <div class="seg">
+          <button data-tf="D" class="active">日</button>
+          <button data-tf="W">周</button>
+          <button data-tf="Y">年</button>
+        </div>
+        <div class="hint" id="tfHint">日：最近 6 个月｜周：周K聚合｜年：最近 1 年</div>
+      </div>
 
-      const reasons = [
-        "新产品周期带来利润改善",
-        "技术面突破关键阻力位",
-        "机构上调盈利预期",
-        "估值回到历史区间低位",
-        "行业景气度持续上行",
-        "现金流稳健且回购力度增加",
-        "政策利好推动需求增长",
-        "基本面改善叠加催化事件",
-        "订单能见度提升",
-        "市场情绪回暖",
-      ];
+      <div class="panel">
+        <div id="chart"></div>
+        <div class="hint" id="chartHint">加载中…</div>
+      </div>
 
-      const recommenders = ["晨星策略组","蓝海研究院","趋势量化团队","北极星投研","红杉资本顾问","聚焦财报分析"];
+      <div class="panel">
+        <div class="hint" id="info">--</div>
+      </div>
+    </div>
+  </aside>
 
-      const formatter = new Intl.DateTimeFormat("zh-CN", {
-        year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
+  <script src="https://unpkg.com/lightweight-charts@5.1.0/dist/lightweight-charts.standalone.production.js"></script>
+  <script>
+    const tbody = document.getElementById("tbody");
+    const q = document.getElementById("q");
+    const count = document.getElementById("count");
+    const meta = document.getElementById("meta");
+    const reloadBtn = document.getElementById("reload");
+    const clearBtn = document.getElementById("clear");
+
+    const overlay = document.getElementById("overlay");
+    const drawer = document.getElementById("drawer");
+    const dclose = document.getElementById("dclose");
+    const dsym = document.getElementById("dsym");
+    const dsub = document.getElementById("dsub");
+    const chartEl = document.getElementById("chart");
+    const chartHint = document.getElementById("chartHint");
+    const info = document.getElementById("info");
+    const tfButtons = Array.from(document.querySelectorAll(".seg button[data-tf]"));
+
+    let rows = [];
+    let filtered = [];
+    let current = null;
+    let currentTf = "D";
+
+    // chart
+    let chart, series, lineNow, lineTarget;
+
+    const usd = (n) => (Number.isFinite(n) ? `$${Number(n).toFixed(2)}` : "--");
+    const grade = (s) => s >= 85 ? "A" : s >= 70 ? "B" : "C";
+
+    const ensureChart = () => {
+      if (chart) return;
+      chartEl.innerHTML = "";
+      chart = LightweightCharts.createChart(chartEl, {
+        width: chartEl.clientWidth,
+        height: chartEl.clientHeight,
+        layout: { background: { type:"solid", color:"#fff" }, textColor:"#111" },
+        grid: { vertLines: { color:"#eee" }, horzLines:{ color:"#eee" } },
+        rightPriceScale: { borderColor:"#e6e6e3" },
+        timeScale: { borderColor:"#e6e6e3" },
       });
+      series = chart.addCandlestickSeries({
+        upColor:"#111",
+        downColor:"#999",
+        borderUpColor:"#111",
+        borderDownColor:"#999",
+        wickUpColor:"#111",
+        wickDownColor:"#999",
+        priceLineVisible:false,
+        lastValueVisible:false,
+      });
+      new ResizeObserver(() => {
+        if (!chart) return;
+        chart.applyOptions({ width: chartEl.clientWidth, height: chartEl.clientHeight });
+      }).observe(chartEl);
+    };
 
-      const tableBody = document.getElementById("tableBody");
-      const filterInput = document.getElementById("filterInput");
-      const rowCount = document.getElementById("rowCount");
-      const lastUpdated = document.getElementById("lastUpdated");
-      const refreshButton = document.getElementById("refreshButton");
-      const clearButton = document.getElementById("clearButton");
+    const setLines = (nowPrice, targetPrice) => {
+      if (lineNow) { series.removePriceLine(lineNow); lineNow = null; }
+      if (lineTarget) { series.removePriceLine(lineTarget); lineTarget = null; }
 
-      /***********************
-       * Drawer / Chart UI
-       ***********************/
-      const overlay = document.getElementById("overlay");
-      const drawer = document.getElementById("drawer");
-      const closeDrawerBtn = document.getElementById("closeDrawer");
-      const drawerSymbol = document.getElementById("drawerSymbol");
-      const drawerSub = document.getElementById("drawerSub");
-      const chartEl = document.getElementById("chart");
-      const chartHint = document.getElementById("chartHint");
-      const kvScore = document.getElementById("kvScore");
-      const kvNow = document.getElementById("kvNow");
-      const kvTarget = document.getElementById("kvTarget");
-      const kvReason = document.getElementById("kvReason");
-      const kvBy = document.getElementById("kvBy");
-
-      let chart = null;
-      let candleSeries = null;
-      let priceLineNow = null;
-      let priceLineTarget = null;
-
-      const tfButtons = Array.from(document.querySelectorAll(".tf button[data-tf]"));
-      let currentTf = "D";
-      let currentRow = null; // 当前打开的 row
-
-      /***********************
-       * 工具函数
-       ***********************/
-      const getTodayKey = () => {
-        const now = new Date();
-        return `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-      };
-
-      const randomBetween = (min, max) =>
-        Math.round((Math.random() * (max - min) + min) * 100) / 100;
-
-      const scoreToGrade = (score) => {
-        if (score >= 85) return "A";
-        if (score >= 70) return "B";
-        return "C";
-      };
-
-      const formatUsd = (n) => {
-        if (n === null || n === undefined || Number.isNaN(n)) return "--";
-        return `$${Number(n).toFixed(2)}`;
-      };
-
-      const parseUsd = (s) => {
-        if (!s) return null;
-        const v = Number(String(s).replace("$", "").trim());
-        return Number.isFinite(v) ? v : null;
-      };
-
-      /***********************
-       * 生成每日推荐（示例）
-       ***********************/
-      const generateResearchRows = () => {
-        const sample = [...stocks].sort(() => 0.5 - Math.random()).slice(0, MAX_ROWS);
-        return sample.map((symbol) => {
-          const target = randomBetween(80, 320);
-          const score = Math.round(randomBetween(60, 95));
-          return {
-            symbol,
-            score,                // 推荐指数 0-100
-            currentPrice: null,   // 现价：打开K线时拉取
-            targetPrice: `$${target.toFixed(2)}`,
-            reason: reasons[Math.floor(Math.random() * reasons.length)],
-            recommender: recommenders[Math.floor(Math.random() * recommenders.length)],
-          };
+      if (Number.isFinite(nowPrice)) {
+        lineNow = series.createPriceLine({
+          price: nowPrice,
+          color: "rgba(17,17,17,0.9)",
+          lineWidth: 2,
+          lineStyle: 2, // dashed
+          axisLabelVisible: true,
+          title: `现价 ${usd(nowPrice)}`
         });
-      };
+      }
+      if (Number.isFinite(targetPrice)) {
+        lineTarget = series.createPriceLine({
+          price: targetPrice,
+          color: "rgba(17,17,17,0.55)",
+          lineWidth: 2,
+          lineStyle: 2, // dashed
+          axisLabelVisible: true,
+          title: `目标价 ${usd(targetPrice)}`
+        });
+      }
+    };
 
-      const loadData = () => {
-        const savedDate = localStorage.getItem(STORAGE_DATE_KEY);
-        const today = getTodayKey();
-        if (savedDate !== today) {
-          localStorage.removeItem(STORAGE_KEY);
+    const lastN = (arr, n) => arr.length > n ? arr.slice(arr.length - n) : arr;
+
+    const toWeekly = (daily) => {
+      const getWeekKey = (dateStr) => {
+        const d = new Date(dateStr + "T00:00:00");
+        const day = (d.getDay() + 6) % 7; // Mon=0
+        d.setDate(d.getDate() - day);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2,"0");
+        const dd = String(d.getDate()).padStart(2,"0");
+        return `${y}-${m}-${dd}`;
+      };
+      const map = new Map();
+      for (const c of daily) {
+        const key = getWeekKey(c.time);
+        if (!map.has(key)) map.set(key, { time:key, open:c.open, high:c.high, low:c.low, close:c.close });
+        else {
+          const w = map.get(key);
+          w.high = Math.max(w.high, c.high);
+          w.low = Math.min(w.low, c.low);
+          w.close = c.close;
         }
+      }
+      return Array.from(map.values()).sort((a,b)=>a.time<b.time?-1:1);
+    };
 
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) return JSON.parse(stored);
+    async function loadQuotes() {
+      // cache bust
+      const res = await fetch(`data/quotes.json?t=${Date.now()}`, { cache:"no-store" });
+      if (!res.ok) throw new Error("quotes.json 加载失败");
+      return res.json();
+    }
 
-        const fresh = generateResearchRows();
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
-        localStorage.setItem(STORAGE_DATE_KEY, today);
-        return fresh;
-      };
+    async function loadCandles(symbol) {
+      const res = await fetch(`data/candles/${symbol}.json?t=${Date.now()}`, { cache:"no-store" });
+      if (!res.ok) throw new Error(`candles/${symbol}.json 加载失败`);
+      return res.json();
+    }
 
-      let data = loadData();
+    function renderTable(list) {
+      tbody.innerHTML = list.map((r, idx) => {
+        const g = grade(r.score);
+        return `
+          <tr data-idx="${idx}">
+            <td class="ticker">${r.symbol}</td>
+            <td>
+              <div class="scoreBox">
+                <div class="bar"><span style="width:${r.score}%"></span></div>
+                <span class="pill">指数 ${r.score} · ${g}</span>
+              </div>
+            </td>
+            <td class="num">${usd(r.currentPrice)}</td>
+            <td class="num"><b>${usd(r.targetPrice)}</b></td>
+            <td>${r.reason}</td>
+            <td class="muted">${r.recommender}</td>
+          </tr>
+        `;
+      }).join("");
+      count.textContent = list.length;
 
-      const persistData = () => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        localStorage.setItem(STORAGE_DATE_KEY, getTodayKey());
-      };
-
-      /***********************
-       * 表格渲染
-       ***********************/
-      const renderRows = (rows) => {
-        tableBody.innerHTML = rows
-          .map((row, idx) => {
-            const grade = scoreToGrade(row.score);
-            const now = row.currentPrice ? formatUsd(row.currentPrice) : "--";
-            const target = row.targetPrice || "--";
-            return `
-              <tr data-idx="${idx}" title="点击打开K线">
-                <td><strong>${row.symbol}</strong></td>
-
-                <td>
-                  <div class="score">
-                    <div class="bar" aria-label="推荐指数">
-                      <span style="width:${row.score}%"></span>
-                    </div>
-                    <div class="grade">指数 ${row.score} · ${grade}</div>
-                  </div>
-                </td>
-
-                <td class="price">${now}</td>
-                <td class="price"><strong>${target}</strong></td>
-                <td>${row.reason}</td>
-                <td>${row.recommender}</td>
-
-                <td style="text-align:right;">
-                  <div class="action">
-                    <span class="arrow">›</span>
-                  </div>
-                </td>
-              </tr>
-            `;
-          })
-          .join("");
-
-        rowCount.textContent = rows.length;
-
-        // 行点击打开 drawer
-        Array.from(tableBody.querySelectorAll("tr[data-idx]")).forEach((tr) => {
-          tr.addEventListener("click", () => {
-            const idx = Number(tr.getAttribute("data-idx"));
-            const row = rows[idx];
-            openDrawer(row);
-          });
+      Array.from(tbody.querySelectorAll("tr[data-idx]")).forEach(tr=>{
+        tr.addEventListener("click", () => {
+          const i = Number(tr.dataset.idx);
+          openDrawer(list[i]);
         });
-      };
+      });
+    }
 
-      const updateLastUpdated = () => {
-        lastUpdated.textContent = `最后更新：${formatter.format(new Date())}`;
-      };
-
-      const applyFilter = () => {
-        const keyword = filterInput.value.trim();
-        if (!keyword) { renderRows(data); return; }
-
-        const lower = keyword.toLowerCase();
-        const filtered = data.filter((row) => {
-          const grade = scoreToGrade(row.score).toLowerCase();
-          return [row.symbol, row.reason, row.recommender, grade]
-            .some((item) => String(item).toLowerCase().includes(lower));
+    function applyFilter() {
+      const keyword = q.value.trim().toLowerCase();
+      if (!keyword) {
+        filtered = rows;
+      } else {
+        filtered = rows.filter(r => {
+          const g = grade(r.score).toLowerCase();
+          return [r.symbol, r.reason, r.recommender, g].some(x => String(x).toLowerCase().includes(keyword));
         });
+      }
+      renderTable(filtered);
+    }
 
-        renderRows(filtered);
-      };
-
-      const refreshData = () => {
-        data = generateResearchRows();
-        persistData();
+    async function refresh() {
+      try {
+        const payload = await loadQuotes();
+        rows = payload.rows || [];
+        meta.textContent = `最后更新：${payload.lastUpdated || "--"}`;
         applyFilter();
-        updateLastUpdated();
-      };
+      } catch (e) {
+        meta.textContent = "最后更新：加载失败（请确认 data/quotes.json 是否存在）";
+        console.error(e);
+      }
+    }
 
-      filterInput.addEventListener("input", applyFilter);
-      refreshButton.addEventListener("click", refreshData);
-      clearButton.addEventListener("click", () => {
-        filterInput.value = "";
-        applyFilter();
+    function openUI() {
+      overlay.classList.add("open");
+      drawer.classList.add("open");
+      drawer.setAttribute("aria-hidden", "false");
+    }
+    function closeUI() {
+      overlay.classList.remove("open");
+      drawer.classList.remove("open");
+      drawer.setAttribute("aria-hidden", "true");
+    }
+
+    async function openDrawer(row) {
+      current = row;
+      currentTf = "D";
+      tfButtons.forEach(b => b.classList.toggle("active", b.dataset.tf==="D"));
+
+      dsym.textContent = row.symbol;
+      dsub.textContent = `${row.recommender} · 指数 ${row.score}（${grade(row.score)}）`;
+      info.textContent = `现价：${usd(row.currentPrice)} ｜ 目标价：${usd(row.targetPrice)} ｜ 理由：${row.reason}`;
+
+      openUI();
+      await renderChart();
+    }
+
+    async function renderChart() {
+      if (!current) return;
+      ensureChart();
+      chartHint.textContent = "加载中…";
+
+      try {
+        const payload = await loadCandles(current.symbol);
+        const daily = payload.candles || [];
+        if (!daily.length) throw new Error("candles 为空");
+
+        let show = daily;
+        if (currentTf === "D") show = lastN(daily, 126);
+        if (currentTf === "Y") show = lastN(daily, 252);
+        if (currentTf === "W") show = lastN(toWeekly(daily), 156);
+
+        series.setData(show);
+        chart.timeScale().fitContent();
+
+        const nowPrice = payload.currentPrice;
+        const targetPrice = current.targetPrice;
+
+        setLines(nowPrice, targetPrice);
+        chartHint.textContent = `${current.symbol} · ${currentTf==="D"?"日K":"周K/年K"}`;
+        info.textContent = `现价：${usd(nowPrice)} ｜ 目标价：${usd(targetPrice)} ｜ 理由：${current.reason}`;
+      } catch (e) {
+        chartHint.textContent = "K 线加载失败：请确认 data/candles/*.json 已由 Action 生成。";
+        console.error(e);
+      }
+    }
+
+    q.addEventListener("input", applyFilter);
+    reloadBtn.addEventListener("click", refresh);
+    clearBtn.addEventListener("click", () => { q.value=""; applyFilter(); });
+
+    overlay.addEventListener("click", closeUI);
+    dclose.addEventListener("click", closeUI);
+    window.addEventListener("keydown", (e)=>{ if(e.key==="Escape") closeUI(); });
+
+    tfButtons.forEach(btn=>{
+      btn.addEventListener("click", async ()=>{
+        if (!current) return;
+        currentTf = btn.dataset.tf;
+        tfButtons.forEach(b=>b.classList.toggle("active", b===btn));
+        await renderChart();
       });
+    });
 
-      /***********************
-       * 行情：Stooq CSV（无 key）
-       * 示例：https://stooq.com/q/d/l/?s=AAPL.US&i=d  [oai_citation:3‡Stack Overflow](https://stackoverflow.com/questions/52372225/getting-historical-stock-prices-in-google-apps-script?utm_source=chatgpt.com)
-       ***********************/
-      const buildStooqSymbol = (symbol) => {
-        // 你这份列表是美股：AAPL -> aapl.us
-        // 如果以后你要支持别的市场，可以在这里扩展
-        return `${symbol}`.toLowerCase() + ".us";
-      };
-
-      const fetchDailyCandles = async (symbol) => {
-        const s = buildStooqSymbol(symbol);
-        const url = `https://stooq.com/q/d/l/?s=${encodeURIComponent(s)}&i=d`;
-
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) throw new Error(`行情请求失败：${res.status}`);
-
-        const text = await res.text();
-
-        // CSV header: Date,Open,High,Low,Close,Volume
-        const lines = text.trim().split("\n");
-        if (lines.length < 3) throw new Error("行情数据为空");
-
-        const rows = [];
-        for (let i = 1; i < lines.length; i++) {
-          const parts = lines[i].split(",");
-          if (parts.length < 5) continue;
-
-          const [dateStr, o, h, l, c] = parts;
-          if (!dateStr || dateStr.toLowerCase().includes("null")) continue;
-
-          const open = Number(o), high = Number(h), low = Number(l), close = Number(c);
-          if (![open, high, low, close].every(Number.isFinite)) continue;
-
-          // Lightweight Charts：time 用 yyyy-mm-dd 字符串也可以
-          rows.push({ time: dateStr, open, high, low, close });
-        }
-
-        // 确保按时间升序
-        rows.sort((a, b) => (a.time < b.time ? -1 : 1));
-        return rows;
-      };
-
-      // 把日K聚合成周K（周：周一~周五/周日都行，这里按 ISO week 简化）
-      const toWeeklyCandles = (daily) => {
-        const getWeekKey = (dateStr) => {
-          const d = new Date(dateStr + "T00:00:00");
-          // ISO week：把周一当周开始
-          const day = (d.getDay() + 6) % 7; // Mon=0..Sun=6
-          d.setDate(d.getDate() - day);
-          const y = d.getFullYear();
-          const m = String(d.getMonth() + 1).padStart(2, "0");
-          const dd = String(d.getDate()).padStart(2, "0");
-          return `${y}-${m}-${dd}`; // 这一周的周一日期作为 time
-        };
-
-        const map = new Map();
-        for (const c of daily) {
-          const key = getWeekKey(c.time);
-          if (!map.has(key)) {
-            map.set(key, { time: key, open: c.open, high: c.high, low: c.low, close: c.close });
-          } else {
-            const w = map.get(key);
-            w.high = Math.max(w.high, c.high);
-            w.low = Math.min(w.low, c.low);
-            w.close = c.close; // 最后一天收盘
-          }
-        }
-
-        return Array.from(map.values()).sort((a, b) => (a.time < b.time ? -1 : 1));
-      };
-
-      const lastN = (arr, n) => (arr.length > n ? arr.slice(arr.length - n) : arr);
-
-      /***********************
-       * Chart 初始化 + 更新
-       ***********************/
-      const ensureChart = () => {
-        if (chart) return;
-
-        chartEl.innerHTML = "";
-        chart = LightweightCharts.createChart(chartEl, {
-          width: chartEl.clientWidth,
-          height: chartEl.clientHeight,
-          layout: { textColor: "#0f172a", background: { type: "solid", color: "#ffffff" } },
-          grid: {
-            vertLines: { color: "rgba(226,232,240,0.9)" },
-            horzLines: { color: "rgba(226,232,240,0.9)" },
-          },
-          rightPriceScale: { borderColor: "rgba(226,232,240,0.9)" },
-          timeScale: { borderColor: "rgba(226,232,240,0.9)" },
-          crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-        });
-
-        candleSeries = chart.addCandlestickSeries({
-          upColor: "#16a34a",
-          downColor: "#ef4444",
-          borderUpColor: "#16a34a",
-          borderDownColor: "#ef4444",
-          wickUpColor: "#16a34a",
-          wickDownColor: "#ef4444",
-          // 关闭内置最后价线（我们用自定义虚线）
-          priceLineVisible: false,
-          lastValueVisible: false,
-        });
-
-        // resize
-        const ro = new ResizeObserver(() => {
-          if (!chart) return;
-          chart.applyOptions({ width: chartEl.clientWidth, height: chartEl.clientHeight });
-        });
-        ro.observe(chartEl);
-      };
-
-      const setPriceLines = (nowPrice, targetPrice) => {
-        // 清掉旧线
-        if (priceLineNow) { candleSeries.removePriceLine(priceLineNow); priceLineNow = null; }
-        if (priceLineTarget) { candleSeries.removePriceLine(priceLineTarget); priceLineTarget = null; }
-
-        // 现价虚线
-        if (Number.isFinite(nowPrice)) {
-          priceLineNow = candleSeries.createPriceLine({
-            price: nowPrice,
-            color: "rgba(37,99,235,0.95)",
-            lineWidth: 2,
-            lineStyle: 2, // dashed  [oai_citation:4‡TradingView](https://tradingview.github.io/lightweight-charts/tutorials/how_to/price-line)
-            axisLabelVisible: true,
-            title: `现价 ${formatUsd(nowPrice)}`,
-          });
-        }
-
-        // 目标价虚线
-        if (Number.isFinite(targetPrice)) {
-          priceLineTarget = candleSeries.createPriceLine({
-            price: targetPrice,
-            color: "rgba(124,58,237,0.95)",
-            lineWidth: 2,
-            lineStyle: 2, // dashed  [oai_citation:5‡TradingView](https://tradingview.github.io/lightweight-charts/tutorials/how_to/price-line)
-            axisLabelVisible: true,
-            title: `目标价 ${formatUsd(targetPrice)}`,
-          });
-        }
-      };
-
-      const updateChartForRow = async (row, tf) => {
-        ensureChart();
-        chartHint.textContent = "加载中…";
-
-        try {
-          const daily = await fetchDailyCandles(row.symbol);
-
-          let candles = daily;
-          if (tf === "D") {
-            candles = lastN(daily, 126); // 约6个月交易日
-          } else if (tf === "W") {
-            const weekly = toWeeklyCandles(daily);
-            candles = lastN(weekly, 156); // 约3年周K
-          } else if (tf === "Y") {
-            candles = lastN(daily, 252); // 最近1年
-          }
-
-          candleSeries.setData(candles);
-          chart.timeScale().fitContent();
-
-          const latest = daily[daily.length - 1];
-          const nowPrice = latest?.close ?? null;
-          const targetPrice = parseUsd(row.targetPrice);
-
-          // 回写“现价”到表格数据（本地存储）
-          if (Number.isFinite(nowPrice)) {
-            // 更新 data 中对应 symbol 的 currentPrice
-            const idx = data.findIndex((x) => x.symbol === row.symbol);
-            if (idx >= 0) {
-              data[idx].currentPrice = nowPrice;
-              persistData();
-              applyFilter(); // 刷新表格显示“现价”
-            }
-          }
-
-          setPriceLines(nowPrice, targetPrice);
-
-          chartHint.textContent = `已加载：${row.symbol}（${tf === "D" ? "日K" : tf === "W" ? "周K" : "最近1年"}）`;
-          kvNow.textContent = formatUsd(nowPrice);
-          kvTarget.textContent = row.targetPrice || "--";
-        } catch (e) {
-          chartHint.textContent =
-            "加载失败：可能是网络/CORS 限制或该股票在数据源不存在。若你用 GitHub Pages 遇到 CORS，我可以给你一个“免费 GitHub Action 代理方案”来解决。";
-          console.error(e);
-        }
-      };
-
-      /***********************
-       * Drawer 打开/关闭
-       ***********************/
-      const openDrawer = async (row) => {
-        currentRow = row;
-        currentTf = "D";
-
-        // UI 文案
-        drawerSymbol.textContent = row.symbol;
-        drawerSub.textContent = `${row.recommender} · 指数 ${row.score} (${scoreToGrade(row.score)})`;
-        kvScore.textContent = `${row.score} / 100（等级 ${scoreToGrade(row.score)}）`;
-        kvReason.textContent = row.reason;
-        kvBy.textContent = row.recommender;
-        kvTarget.textContent = row.targetPrice || "--";
-        kvNow.textContent = "--";
-
-        // 按钮状态
-        tfButtons.forEach((b) => b.classList.toggle("active", b.dataset.tf === "D"));
-
-        // open
-        overlay.classList.add("open");
-        drawer.classList.add("open");
-        drawer.setAttribute("aria-hidden", "false");
-
-        // load chart
-        await updateChartForRow(row, currentTf);
-      };
-
-      const closeDrawer = () => {
-        overlay.classList.remove("open");
-        drawer.classList.remove("open");
-        drawer.setAttribute("aria-hidden", "true");
-      };
-
-      overlay.addEventListener("click", closeDrawer);
-      closeDrawerBtn.addEventListener("click", closeDrawer);
-      window.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeDrawer();
-      });
-
-      // timeframe 切换
-      tfButtons.forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          if (!currentRow) return;
-          const tf = btn.dataset.tf;
-          currentTf = tf;
-          tfButtons.forEach((b) => b.classList.toggle("active", b === btn));
-          await updateChartForRow(currentRow, tf);
-        });
-      });
-
-      /***********************
-       * 初次渲染
-       ***********************/
-      renderRows(data);
-      updateLastUpdated();
-    </script>
-  </body>
+    refresh();
+  </script>
+</body>
 </html>
