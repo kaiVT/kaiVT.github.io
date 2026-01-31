@@ -32,6 +32,7 @@ jobs:
           TARGET_DTE: "30"
           DTE_WINDOW: "7"
           MAX_EXPS: "2"
+          FORCE_RUN: "1"
         run: |
           python scripts/fetch_yahoo_options.py
 
