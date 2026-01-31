@@ -1,21 +1,21 @@
 {
-  "generated_at_utc": "2026-01-31T02:31:51.066175+00:00",
-  "generated_at_et": "2026-01-30T21:31:51.066175-05:00",
-  "target_dte": 30,
-  "dte_window": 7,
+  "generated_at_utc": "2026-01-31T02:38:58.385935+00:00",
+  "generated_at_et": "2026-01-30T21:38:58.385935-05:00",
   "tickers": [
     "ZETA",
     "HROW"
   ],
+  "target_dte": 30,
+  "dte_window": 45,
   "rows": [],
   "errors": [
     {
       "ticker": "ZETA",
-      "error": "401 Client Error: Unauthorized for url: https://query2.finance.yahoo.com/v7/finance/options/ZETA"
+      "error": "Yahoo options API blocked/failed. Last error: 429 Client Error: Too Many Requests for url: https://query1.finance.yahoo.com/v7/finance/options/ZETA"
     },
     {
       "ticker": "HROW",
-      "error": "401 Client Error: Unauthorized for url: https://query2.finance.yahoo.com/v7/finance/options/HROW"
+      "error": "Yahoo options API blocked/failed. Last error: 429 Client Error: Too Many Requests for url: https://query1.finance.yahoo.com/v7/finance/options/HROW"
     }
   ],
   "note": "Yahoo data is unofficial; for testing only. Prob/score are rough estimates."

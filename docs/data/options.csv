@@ -1,1 +1,1 @@
-ticker,expiration,dte,spot,strike,bid,ask,premium_$,price_diff_%,iv,prob_itm_%,apr_%,cash_collateral_$,score
+ticker,expiration,dte,spot,strike,bid,ask,premium_$,price_diff_%,iv,prob_itm_%,apr_%,cash_collateral_$,open_interest,volume,score
