@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sell Put Scanner (Free Test)</title>
+  <style>
+    body { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial; margin: 16px; }
+    .top { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    input { padding: 8px; font-size: 14px; width: 220px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { border-bottom: 1px solid #eee; padding: 10px 8px; text-align: right; font-size: 13px; }
+    th { position: sticky; top: 0; background: #fff; cursor: pointer; }
+    td:first-child, th:first-child { text-align: left; }
+    .muted { color: #666; font-size: 12px; margin-top: 8px; }
+    .pill { display:inline-block; padding: 2px 8px; border-radius: 999px; background:#f3f3f3; font-size:12px; }
+  </style>
+</head>
+<body>
+  <h2>Sell Put Scanner（免费测试版）</h2>
+
+  <div class="top">
+    <input id="filterTicker" placeholder="过滤 Ticker (例如 ZETA)" />
+    <input id="minApr" placeholder="最小APR% (例如 30)" />
+    <input id="maxProb" placeholder="最大ITM概率% (例如 30)" />
+    <span class="pill" id="updated">加载中...</span>
+  </div>
+
+  <div class="muted">
+    数据来自 Yahoo（非官方），仅测试用。APR/概率是粗略估算。
+  </div>
+
+  <table id="tbl">
+    <thead>
+      <tr>
+        <th data-k="ticker" style="text-align:left">Ticker</th>
+        <th data-k="expiration">到期</th>
+        <th data-k="dte">DTE</th>
+        <th data-k="spot">现价</th>
+        <th data-k="strike">行权价</th>
+        <th data-k="bid">Bid</th>
+        <th data-k="premium_$">权利金($/张)</th>
+        <th data-k="price_diff_%">价格差%</th>
+        <th data-k="apr_%">APR%</th>
+        <th data-k="prob_itm_%">ITM概率%</th>
+        <th data-k="cash_collateral_$">保证金($)</th>
+        <th data-k="score">Score</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+<script>
+let rows = [];
+let sortKey = "score";
+let sortDesc = true;
+
+function num(v) {
+  if (v === null || v === undefined || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+function fmt(v, digits=2) {
+  const n = num(v);
+  if (n === null) return "-";
+  return n.toFixed(digits);
+}
+
+function passFilters(r) {
+  const fTicker = document.getElementById("filterTicker").value.trim().toUpperCase();
+  const minApr = num(document.getElementById("minApr").value.trim());
+  const maxProb = num(document.getElementById("maxProb").value.trim());
+
+  if (fTicker && !r.ticker.includes(fTicker)) return false;
+  if (minApr !== null && (num(r["apr_%"]) === null || r["apr_%"] < minApr)) return false;
+  if (maxProb !== null && (num(r["prob_itm_%"]) === null || r["prob_itm_%"] > maxProb)) return false;
+  return true;
+}
+
+function sortRows(list) {
+  return list.sort((a,b) => {
+    const av = a[sortKey];
+    const bv = b[sortKey];
+    const an = num(av);
+    const bn = num(bv);
+
+    if (an === null && bn === null) return 0;
+    if (an === null) return 1;
+    if (bn === null) return -1;
+
+    return sortDesc ? (bn - an) : (an - bn);
+  });
+}
+
+function render() {
+  const tbody = document.querySelector("#tbl tbody");
+  tbody.innerHTML = "";
+
+  const filtered = rows.filter(passFilters);
+  sortRows(filtered);
+
+  for (const r of filtered) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="text-align:left">${r.ticker}</td>
+      <td>${r.expiration}</td>
+      <td>${r.dte}</td>
+      <td>${fmt(r.spot, 2)}</td>
+      <td>${fmt(r.strike, 2)}</td>
+      <td>${fmt(r.bid, 2)}</td>
+      <td>${fmt(r["premium_$"], 2)}</td>
+      <td>${fmt(r["price_diff_%"], 2)}</td>
+      <td>${fmt(r["apr_%"], 2)}</td>
+      <td>${fmt(r["prob_itm_%"], 2)}</td>
+      <td>${fmt(r["cash_collateral_$"], 0)}</td>
+      <td>${fmt(r.score, 2)}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+async function load() {
+  const res = await fetch("./data/options.json?ts=" + Date.now());
+  const data = await res.json();
+  rows = data.rows || [];
+  document.getElementById("updated").textContent =
+    "更新: " + (data.generated_at_et || data.generated_at_utc || "unknown");
+
+  render();
+}
+
+document.getElementById("filterTicker").addEventListener("input", render);
+document.getElementById("minApr").addEventListener("input", render);
+document.getElementById("maxProb").addEventListener("input", render);
+
+document.querySelectorAll("th[data-k]").forEach(th => {
+  th.addEventListener("click", () => {
+    const k = th.getAttribute("data-k");
+    if (sortKey === k) sortDesc = !sortDesc;
+    else { sortKey = k; sortDesc = true; }
+    render();
+  });
+});
+
+load();
+</script>
+</body>
+</html>
