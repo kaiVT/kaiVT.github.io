@@ -117,9 +117,11 @@ def main():
     now_et = now_utc.astimezone(TZ)
 
     # 不在时间范围就直接退出（保持免费但不刷夜里）
-    if not within_et_window(now_et):
+    force = os.getenv("FORCE_RUN", "0") == "1"
+    if (not force) and (not within_et_window(now_et)):
         print(f"Skip: outside ET window. Now ET = {now_et.isoformat()}")
         return
+
 
     tickers_env = os.getenv("TICKERS", "")
     tickers = [t.strip().upper() for t in tickers_env.split(",") if t.strip()] or DEFAULT_TICKERS
