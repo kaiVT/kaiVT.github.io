@@ -30,7 +30,7 @@ jobs:
           # ✅ 你先改这里：股票列表（逗号分隔）
           TICKERS: "ZETA,HROW"
           TARGET_DTE: "30"
-          DTE_WINDOW: "7"
+          DTE_WINDOW: "45"
           MAX_EXPS: "2"
           FORCE_RUN: "1"
         run: |
