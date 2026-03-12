@@ -1,6 +1,6 @@
 {
-  "generated_at_utc": "2026-03-12T06:03:57.053242+00:00",
-  "generated_at_et": "2026-03-12T02:03:57.053242-04:00",
+  "generated_at_utc": "2026-03-12T07:10:05.235468+00:00",
+  "generated_at_et": "2026-03-12T03:10:05.235468-04:00",
   "tickers": [
     "ZETA",
     "HROW"
@@ -11,8 +11,8 @@
   "rows": [],
   "errors": [
     {
-      "ticker": "ZETA",
-      "error": "Yahoo blocked/failed for ZETA"
+      "ticker": "HROW",
+      "error": "Yahoo blocked/failed for HROW"
     }
   ],
   "note": "Yahoo data is unofficial; GitHub Actions IPs may get rate-limited. Script keeps last good data."
