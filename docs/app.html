@@ -2,173 +2,226 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>My Stock Portfolio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0b1120" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+  <title>My Portfolio</title>
   <style>
     :root {
-      --bg: #f6f7f9;
+      --bg: #f2f4f7;
+      --bg-grad: radial-gradient(1200px 600px at 50% -10%, #e8edff 0%, rgba(232,237,255,0) 60%);
       --card: #ffffff;
-      --text: #1c2024;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-      --accent: #2563eb;
-      --accent-hover: #1d4ed8;
-      --danger: #dc2626;
-      --up: #16a34a;
+      --card-2: #f8fafc;
+      --text: #0f172a;
+      --muted: #64748b;
+      --faint: #94a3b8;
+      --border: #e6e9ef;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --up: #059669;
+      --up-bg: rgba(5,150,105,.12);
       --down: #dc2626;
-      --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+      --down-bg: rgba(220,38,38,.12);
+      --shadow: 0 1px 2px rgba(16,24,40,.04), 0 4px 16px rgba(16,24,40,.06);
+      --radius: 16px;
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #0f1115;
-        --card: #191c22;
-        --text: #e6e8eb;
-        --muted: #9aa0a6;
-        --border: #2a2e37;
-        --accent: #3b82f6;
-        --accent-hover: #60a5fa;
-        --danger: #ef4444;
-        --up: #22c55e;
-        --down: #ef4444;
-        --shadow: 0 1px 3px rgba(0,0,0,.4);
+        --bg: #0b1120;
+        --bg-grad: radial-gradient(1200px 600px at 50% -10%, #1a2140 0%, rgba(26,33,64,0) 60%);
+        --card: #131a2b;
+        --card-2: #0f1626;
+        --text: #e8ecf4;
+        --muted: #94a3b8;
+        --faint: #64748b;
+        --border: #232c42;
+        --accent: #6366f1;
+        --accent-hover: #818cf8;
+        --up: #34d399;
+        --up-bg: rgba(52,211,153,.14);
+        --down: #f87171;
+        --down-bg: rgba(248,113,113,.14);
+        --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
       }
     }
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html { -webkit-text-size-adjust: 100%; }
     body {
-      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-      background: var(--bg); color: var(--text);
-      margin: 0; padding: 24px 16px; line-height: 1.5;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg); background-image: var(--bg-grad); background-repeat: no-repeat;
+      color: var(--text); margin: 0; line-height: 1.45;
+      padding:
+        max(20px, env(safe-area-inset-top))
+        max(16px, env(safe-area-inset-right))
+        calc(28px + env(safe-area-inset-bottom))
+        max(16px, env(safe-area-inset-left));
+      -webkit-font-smoothing: antialiased;
     }
-    .wrap { max-width: 860px; margin: 0 auto; }
-    h1 { font-size: 22px; margin: 0 0 4px; }
-    .sub { color: var(--muted); font-size: 13px; margin: 0 0 20px; }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    .tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 
-    .summary {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;
-    }
-    .stat {
-      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-      padding: 14px; box-shadow: var(--shadow);
-    }
-    .stat .label { color: var(--muted); font-size: 12px; }
-    .stat .value { font-size: 20px; font-weight: 700; margin-top: 4px; }
+    header { display: flex; align-items: center; gap: 10px; margin: 4px 2px 18px; }
+    header .logo { font-size: 22px; }
+    header h1 { font-size: 17px; font-weight: 700; margin: 0; letter-spacing: -.01em; }
+    header .tag { margin-left: auto; font-size: 12px; color: var(--faint); }
 
-    .composer {
-      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-      padding: 14px; box-shadow: var(--shadow); margin-bottom: 20px;
+    /* Hero */
+    .hero {
+      background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+      box-shadow: var(--shadow); padding: 22px 22px 18px; margin-bottom: 16px;
     }
-    .fields { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr auto; gap: 10px; align-items: end; }
-    .field { display: flex; flex-direction: column; gap: 4px; }
-    .field label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+    .hero .hlabel { font-size: 13px; color: var(--muted); font-weight: 500; }
+    .hero .hvalue { font-size: 40px; font-weight: 800; letter-spacing: -.02em; margin: 2px 0 8px; line-height: 1.1; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px;
+      padding: 5px 12px; border-radius: 999px;
+    }
+    .badge.up { color: var(--up); background: var(--up-bg); }
+    .badge.down { color: var(--down); background: var(--down-bg); }
+    .badge.flat { color: var(--muted); background: var(--card-2); }
+    .hgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .hgrid .k { font-size: 12px; color: var(--muted); }
+    .hgrid .v { font-size: 17px; font-weight: 700; margin-top: 2px; }
+
+    /* Add form */
+    .card {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 16px; margin-bottom: 16px;
+    }
+    .card h2 { font-size: 13px; font-weight: 700; margin: 0 0 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field.wide { grid-column: 1 / -1; }
+    label { font-size: 12px; color: var(--muted); font-weight: 600; }
     input {
-      padding: 8px 10px; font-size: 14px; border: 1px solid var(--border); border-radius: 8px;
-      background: var(--bg); color: var(--text); font: inherit; width: 100%;
+      font-size: 16px; /* prevents iOS auto-zoom */
+      padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px;
+      background: var(--card-2); color: var(--text); font-family: inherit; width: 100%;
+      -webkit-appearance: none; appearance: none; min-height: 46px;
     }
-    input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
-    button { font: inherit; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
-    .btn-primary { background: var(--accent); color: #fff; padding: 9px 18px; font-size: 14px; }
-    .btn-primary:hover { background: var(--accent-hover); }
-    .hint { color: var(--muted); font-size: 12px; margin-top: 10px; }
+    input::placeholder { color: var(--faint); }
+    input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); background: var(--card); }
+    button { font-family: inherit; border: none; cursor: pointer; font-weight: 700; -webkit-appearance: none; appearance: none; }
+    .btn-primary {
+      width: 100%; margin-top: 12px; background: var(--accent); color: #fff;
+      font-size: 16px; padding: 14px; border-radius: 12px; min-height: 50px;
+      transition: background .15s ease;
+    }
+    .btn-primary:active { background: var(--accent-hover); }
 
-    .list-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-    .count { color: var(--muted); font-size: 13px; }
-    .btn-clear { background: transparent; color: var(--danger); padding: 4px 8px; font-size: 13px; }
-    .btn-clear:hover { text-decoration: underline; }
+    /* Holdings list (cards) */
+    .list-head { display: flex; align-items: center; justify-content: space-between; margin: 22px 4px 12px; }
+    .list-head h2 { font-size: 15px; font-weight: 700; margin: 0; }
+    .btn-clear { background: transparent; color: var(--down); font-size: 13px; padding: 6px 8px; border-radius: 8px; }
 
-    .table-wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--border);
-      border-radius: 12px; box-shadow: var(--shadow); }
-    table { width: 100%; border-collapse: collapse; min-width: 640px; }
-    th, td { padding: 10px 12px; text-align: right; font-size: 13px; border-bottom: 1px solid var(--border); }
-    th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; }
-    td:first-child, th:first-child { text-align: left; }
-    tbody tr:last-child td { border-bottom: none; }
-    .ticker { font-weight: 700; }
-    .up { color: var(--up); }
-    .down { color: var(--down); }
-    .cur-input { width: 90px; text-align: right; padding: 5px 8px; }
-    .del { background: transparent; color: var(--muted); padding: 2px 8px; font-size: 18px; line-height: 1; border-radius: 6px; }
-    .del:hover { color: var(--danger); background: rgba(220,38,38,.08); }
-    tfoot td { font-weight: 700; border-top: 2px solid var(--border); }
-    .empty { text-align: center; color: var(--muted); padding: 32px 0; font-size: 14px; }
+    .holdings { display: flex; flex-direction: column; gap: 12px; }
+    .pos {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 14px 16px;
+    }
+    .pos-top { display: flex; align-items: center; gap: 12px; }
+    .avatar {
+      width: 40px; height: 40px; border-radius: 11px; flex: 0 0 auto;
+      display: grid; place-items: center; font-weight: 800; font-size: 14px; letter-spacing: -.02em;
+      background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent);
+    }
+    .pos-id { min-width: 0; }
+    .pos-ticker { font-weight: 800; font-size: 16px; letter-spacing: -.01em; }
+    .pos-sub { font-size: 12px; color: var(--muted); }
+    .pos-val { margin-left: auto; text-align: right; }
+    .pos-val .mv { font-weight: 800; font-size: 16px; }
+    .pos-val .gl { font-size: 12.5px; font-weight: 700; margin-top: 1px; }
+    .up { color: var(--up); } .down { color: var(--down); } .flat { color: var(--muted); }
+    .del {
+      margin-left: 6px; background: transparent; color: var(--faint); width: 34px; height: 34px;
+      border-radius: 9px; font-size: 20px; line-height: 1; flex: 0 0 auto;
+    }
+    .del:active { background: var(--down-bg); color: var(--down); }
 
-    @media (max-width: 620px) {
-      .summary { grid-template-columns: 1fr; }
-      .fields { grid-template-columns: 1fr 1fr; }
-      .fields .field:nth-child(5) { grid-column: span 2; }
-      .fields .field:nth-child(5) button { width: 100%; }
+    .pos-foot {
+      display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 12px; padding-top: 12px;
+      border-top: 1px dashed var(--border);
+    }
+    .metric { display: flex; flex-direction: column; }
+    .metric .k { font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: .03em; }
+    .metric .v { font-size: 14px; font-weight: 700; }
+    .price-edit {
+      display: flex; align-items: center; gap: 6px; margin-left: auto;
+    }
+    .price-edit label { font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: .03em; }
+    .price-edit input {
+      width: 104px; text-align: right; padding: 9px 11px; min-height: 40px; font-size: 16px;
+    }
+
+    .empty {
+      text-align: center; color: var(--muted); padding: 40px 20px; font-size: 14px;
+      background: var(--card); border: 1px dashed var(--border); border-radius: var(--radius);
+    }
+    .empty .big { font-size: 30px; display: block; margin-bottom: 8px; }
+    footer { text-align: center; color: var(--faint); font-size: 12px; margin-top: 24px; }
+
+    @media (min-width: 560px) {
+      .grid { grid-template-columns: repeat(4, 1fr); }
+      .field.wide { grid-column: auto; }
+      .btn-primary { width: auto; padding: 14px 28px; }
+      .form-row { display: flex; align-items: flex-end; gap: 10px; }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>📈 My Stock Portfolio</h1>
-    <p class="sub">Add your holdings below. Everything is saved in this browser and will still be here next time you open the page.</p>
+    <header>
+      <span class="logo">📈</span>
+      <h1>My Portfolio</h1>
+      <span class="tag">saved on this device</span>
+    </header>
 
-    <div class="summary">
-      <div class="stat"><div class="label">Cost Basis</div><div class="value" id="sumCost">$0.00</div></div>
-      <div class="stat"><div class="label">Market Value</div><div class="value" id="sumValue">$0.00</div></div>
-      <div class="stat"><div class="label">Total Gain / Loss</div><div class="value" id="sumGain">$0.00</div></div>
-    </div>
+    <!-- Hero summary -->
+    <section class="hero">
+      <div class="hlabel">Portfolio Value</div>
+      <div class="hvalue tnum" id="heroValue">$0.00</div>
+      <span class="badge flat" id="heroBadge">—</span>
+      <div class="hgrid">
+        <div><div class="k">Cost Basis</div><div class="v tnum" id="heroCost">$0.00</div></div>
+        <div><div class="k">Holdings</div><div class="v tnum" id="heroCount">0</div></div>
+      </div>
+    </section>
 
-    <div class="composer">
-      <div class="fields">
-        <div class="field">
+    <!-- Add holding -->
+    <section class="card">
+      <h2>Add a holding</h2>
+      <div class="grid">
+        <div class="field wide">
           <label for="ticker">Ticker</label>
-          <input id="ticker" placeholder="AAPL" autocomplete="off" />
+          <input id="ticker" placeholder="AAPL" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="next" />
         </div>
         <div class="field">
           <label for="shares">Shares</label>
-          <input id="shares" type="number" step="any" min="0" placeholder="10" />
+          <input id="shares" type="number" inputmode="decimal" step="any" min="0" placeholder="10" enterkeyhint="next" />
         </div>
         <div class="field">
           <label for="cost">Avg Cost</label>
-          <input id="cost" type="number" step="any" min="0" placeholder="150.00" />
+          <input id="cost" type="number" inputmode="decimal" step="any" min="0" placeholder="150.00" enterkeyhint="next" />
         </div>
         <div class="field">
           <label for="price">Current Price</label>
-          <input id="price" type="number" step="any" min="0" placeholder="175.00" />
-        </div>
-        <div class="field">
-          <label>&nbsp;</label>
-          <button id="add" class="btn-primary">Add</button>
+          <input id="price" type="number" inputmode="decimal" step="any" min="0" placeholder="175.00" enterkeyhint="done" />
         </div>
       </div>
-      <div class="hint">Tip: you can edit each holding's <strong>Current Price</strong> later right in the table to update gains. Stored locally on your device — nothing is uploaded.</div>
-    </div>
+      <button id="add" class="btn-primary">Add holding</button>
+    </section>
 
     <div class="list-head">
-      <span class="count" id="count"></span>
+      <h2>Holdings</h2>
       <button id="clear" class="btn-clear" hidden>Clear all</button>
     </div>
 
-    <div class="table-wrap" id="tableWrap" hidden>
-      <table>
-        <thead>
-          <tr>
-            <th>Ticker</th>
-            <th>Shares</th>
-            <th>Avg Cost</th>
-            <th>Current</th>
-            <th>Cost Basis</th>
-            <th>Market Value</th>
-            <th>Gain / Loss</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="rows"></tbody>
-        <tfoot>
-          <tr>
-            <td>Total</td>
-            <td></td><td></td><td></td>
-            <td id="tCost">$0.00</td>
-            <td id="tValue">$0.00</td>
-            <td id="tGain">$0.00</td>
-            <td></td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-    <div class="empty" id="empty">No holdings yet. Add your first position above.</div>
+    <div class="holdings" id="holdings"></div>
+    <div class="empty" id="empty"><span class="big">💼</span>No holdings yet.<br/>Add your first position above.</div>
+
+    <footer>Prices are entered by you · data stays in this browser</footer>
   </div>
 
   <script>
@@ -176,104 +229,85 @@
     const $ = id => document.getElementById(id);
     const tickerIn = $('ticker'), sharesIn = $('shares'), costIn = $('cost'), priceIn = $('price');
 
-    function load() {
-      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-      catch (e) { return []; }
-    }
+    function load() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch (e) { return []; } }
     function save(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
 
     const money = n => (n < 0 ? '-$' : '$') + Math.abs(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const num = n => (+n).toLocaleString(undefined, { maximumFractionDigits: 4 });
     const pct = n => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
-    const cls = n => n > 0 ? 'up' : n < 0 ? 'down' : '';
+    const cls = n => n > 0 ? 'up' : n < 0 ? 'down' : 'flat';
+    const arrow = n => n > 0 ? '▲' : n < 0 ? '▼' : '•';
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 
     function render() {
       const holdings = load();
-      const rows = $('rows');
-      rows.innerHTML = '';
+      const box = $('holdings');
+      box.innerHTML = '';
       const has = holdings.length > 0;
       $('empty').hidden = has;
-      $('tableWrap').hidden = !has;
       $('clear').hidden = !has;
-      $('count').textContent = has ? holdings.length + (holdings.length === 1 ? ' holding' : ' holdings') : '';
 
       let totCost = 0, totValue = 0;
 
       holdings.forEach(h => {
-        const shares = +h.shares || 0;
-        const cost = +h.cost || 0;
-        const price = h.price === '' || h.price == null ? null : +h.price;
+        const shares = +h.shares || 0, cost = +h.cost || 0;
+        const price = (h.price === '' || h.price == null) ? null : +h.price;
         const basis = shares * cost;
         const value = price == null ? null : shares * price;
         const gain = value == null ? null : value - basis;
-        const gainPct = value == null || basis === 0 ? null : (gain / basis) * 100;
+        const gainPct = (value == null || basis === 0) ? null : (gain / basis) * 100;
         totCost += basis;
-        if (value != null) totValue += value; else totValue += basis; // unpriced holdings count at cost
+        totValue += value == null ? basis : value;
 
-        const tr = document.createElement('tr');
+        const el = document.createElement('div');
+        el.className = 'pos';
+        el.innerHTML = `
+          <div class="pos-top">
+            <div class="avatar">${esc(h.ticker.slice(0,4))}</div>
+            <div class="pos-id">
+              <div class="pos-ticker">${esc(h.ticker)}</div>
+              <div class="pos-sub tnum">${num(shares)} sh @ ${money(cost)}</div>
+            </div>
+            <div class="pos-val">
+              <div class="mv tnum">${value == null ? '—' : money(value)}</div>
+              <div class="gl tnum ${gain == null ? 'flat' : cls(gain)}">${gain == null ? 'set price' : arrow(gain) + ' ' + money(gain) + ' · ' + pct(gainPct)}</div>
+            </div>
+            <button class="del" title="Remove" aria-label="Remove ${esc(h.ticker)}">×</button>
+          </div>
+          <div class="pos-foot">
+            <div class="metric"><span class="k">Cost basis</span><span class="v tnum">${money(basis)}</span></div>
+            <div class="price-edit">
+              <label>Current</label>
+              <input type="number" inputmode="decimal" step="any" min="0" placeholder="—" />
+            </div>
+          </div>`;
 
-        const gainCell = gain == null
-          ? '<span class="muted">—</span>'
-          : `<span class="${cls(gain)}">${money(gain)} (${pct(gainPct)})</span>`;
-
-        tr.innerHTML =
-          `<td class="ticker">${escapeHtml(h.ticker)}</td>` +
-          `<td>${shares.toLocaleString()}</td>` +
-          `<td>${money(cost)}</td>` +
-          `<td></td>` +
-          `<td>${money(basis)}</td>` +
-          `<td>${value == null ? '—' : money(value)}</td>` +
-          `<td>${gainCell}</td>` +
-          `<td><button class="del" title="Remove">×</button></td>`;
-
-        // editable current price input
-        const priceTd = tr.children[3];
-        const inp = document.createElement('input');
-        inp.type = 'number'; inp.step = 'any'; inp.min = '0';
-        inp.className = 'cur-input';
+        const inp = el.querySelector('.price-edit input');
         inp.value = price == null ? '' : price;
-        inp.placeholder = '—';
         inp.addEventListener('change', () => {
-          const list = load();
-          const item = list.find(x => x.id === h.id);
+          const list = load(); const item = list.find(x => x.id === h.id);
           if (item) { item.price = inp.value.trim() === '' ? '' : +inp.value; save(list); render(); }
         });
-        priceTd.appendChild(inp);
-
-        tr.querySelector('.del').addEventListener('click', () => {
-          save(load().filter(x => x.id !== h.id));
-          render();
-        });
-
-        rows.appendChild(tr);
+        el.querySelector('.del').addEventListener('click', () => { save(load().filter(x => x.id !== h.id)); render(); });
+        box.appendChild(el);
       });
 
       const totGain = totValue - totCost;
       const totGainPct = totCost === 0 ? 0 : (totGain / totCost) * 100;
-
-      $('tCost').textContent = money(totCost);
-      $('tValue').textContent = money(totValue);
-      $('tGain').innerHTML = `<span class="${cls(totGain)}">${money(totGain)} (${pct(totGainPct)})</span>`;
-
-      $('sumCost').textContent = money(totCost);
-      $('sumValue').textContent = money(totValue);
-      const sg = $('sumGain');
-      sg.textContent = `${money(totGain)} (${pct(totGainPct)})`;
-      sg.className = 'value ' + cls(totGain);
-    }
-
-    function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+      $('heroValue').textContent = money(totValue);
+      $('heroCost').textContent = money(totCost);
+      $('heroCount').textContent = holdings.length;
+      const badge = $('heroBadge');
+      badge.className = 'badge ' + (has ? cls(totGain) : 'flat');
+      badge.textContent = has ? `${arrow(totGain)} ${money(totGain)} · ${pct(totGainPct)}` : '—';
     }
 
     function add() {
       const ticker = tickerIn.value.trim().toUpperCase();
-      const shares = sharesIn.value.trim();
-      const cost = costIn.value.trim();
-      const price = priceIn.value.trim();
-      if (!ticker) { tickerIn.focus(); return; }
-      if (shares === '' || +shares <= 0) { sharesIn.focus(); return; }
-      if (cost === '' || +cost < 0) { costIn.focus(); return; }
-
+      const shares = sharesIn.value.trim(), cost = costIn.value.trim(), price = priceIn.value.trim();
+      if (!ticker) return tickerIn.focus();
+      if (shares === '' || +shares <= 0) return sharesIn.focus();
+      if (cost === '' || +cost < 0) return costIn.focus();
       const list = load();
       list.push({ id: Date.now() + '-' + Math.random().toString(36).slice(2), ticker, shares: +shares, cost: +cost, price: price === '' ? '' : +price });
       save(list);
@@ -283,14 +317,8 @@
     }
 
     $('add').addEventListener('click', add);
-    [tickerIn, sharesIn, costIn, priceIn].forEach(el =>
-      el.addEventListener('keydown', e => { if (e.key === 'Enter') add(); }));
-    $('clear').addEventListener('click', () => {
-      if (confirm('Remove all holdings? This cannot be undone.')) {
-        localStorage.removeItem(STORAGE_KEY);
-        render();
-      }
-    });
+    priceIn.addEventListener('keydown', e => { if (e.key === 'Enter') add(); });
+    $('clear').addEventListener('click', () => { if (confirm('Remove all holdings? This cannot be undone.')) { localStorage.removeItem(STORAGE_KEY); render(); } });
 
     render();
   </script>
