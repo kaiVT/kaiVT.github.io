@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>My Notes — saved in your browser</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --card: #ffffff;
+      --text: #1c2024;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --danger: #dc2626;
+      --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1115;
+        --card: #191c22;
+        --text: #e6e8eb;
+        --muted: #9aa0a6;
+        --border: #2a2e37;
+        --accent: #3b82f6;
+        --accent-hover: #60a5fa;
+        --danger: #ef4444;
+        --shadow: 0 1px 3px rgba(0,0,0,.4);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 24px 16px;
+      line-height: 1.5;
+    }
+    .wrap { max-width: 640px; margin: 0 auto; }
+    h1 { font-size: 22px; margin: 0 0 4px; }
+    .sub { color: var(--muted); font-size: 13px; margin: 0 0 20px; }
+    .composer {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+    textarea {
+      width: 100%;
+      border: none;
+      resize: vertical;
+      min-height: 70px;
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      outline: none;
+      padding: 4px;
+    }
+    .row { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+    .hint { color: var(--muted); font-size: 12px; }
+    button {
+      font: inherit;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .list-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .count { color: var(--muted); font-size: 13px; }
+    .btn-clear {
+      background: transparent; color: var(--danger); padding: 4px 8px; font-size: 13px;
+    }
+    .btn-clear:hover { text-decoration: underline; }
+    ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+    li {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .note-body { flex: 1; min-width: 0; }
+    .note-text { white-space: pre-wrap; word-wrap: break-word; }
+    .note-time { color: var(--muted); font-size: 11px; margin-top: 6px; }
+    .del {
+      background: transparent; color: var(--muted); padding: 2px 6px; font-size: 18px; line-height: 1;
+      border-radius: 6px;
+    }
+    .del:hover { color: var(--danger); background: rgba(220,38,38,.08); }
+    .empty { text-align: center; color: var(--muted); padding: 32px 0; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>📝 My Notes</h1>
+    <p class="sub">Type anything below. It's saved in this browser and will still be here next time you open this page.</p>
+
+    <div class="composer">
+      <textarea id="input" placeholder="Write a note… (Ctrl/⌘ + Enter to save)"></textarea>
+      <div class="row">
+        <span class="hint">Stored locally on your device — nothing is uploaded.</span>
+        <button id="save" class="btn-primary" disabled>Save</button>
+      </div>
+    </div>
+
+    <div class="list-head">
+      <span class="count" id="count"></span>
+      <button id="clear" class="btn-clear" hidden>Clear all</button>
+    </div>
+
+    <ul id="list"></ul>
+    <div class="empty" id="empty">No notes yet. Add your first one above.</div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'my_notes_v1';
+    const input = document.getElementById('input');
+    const saveBtn = document.getElementById('save');
+    const clearBtn = document.getElementById('clear');
+    const list = document.getElementById('list');
+    const empty = document.getElementById('empty');
+    const count = document.getElementById('count');
+
+    function load() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch (e) {
+        return [];
+      }
+    }
+    function save(notes) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+    }
+
+    function fmt(ts) {
+      const d = new Date(ts);
+      return d.toLocaleString(undefined, {
+        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
+    }
+
+    function render() {
+      const notes = load();
+      list.innerHTML = '';
+      empty.hidden = notes.length > 0;
+      clearBtn.hidden = notes.length === 0;
+      count.textContent = notes.length
+        ? notes.length + (notes.length === 1 ? ' note' : ' notes')
+        : '';
+
+      notes.forEach(note => {
+        const li = document.createElement('li');
+
+        const body = document.createElement('div');
+        body.className = 'note-body';
+        const text = document.createElement('div');
+        text.className = 'note-text';
+        text.textContent = note.text;
+        const time = document.createElement('div');
+        time.className = 'note-time';
+        time.textContent = fmt(note.ts);
+        body.appendChild(text);
+        body.appendChild(time);
+
+        const del = document.createElement('button');
+        del.className = 'del';
+        del.textContent = '×';
+        del.title = 'Delete';
+        del.addEventListener('click', () => removeNote(note.id));
+
+        li.appendChild(body);
+        li.appendChild(del);
+        list.appendChild(li);
+      });
+    }
+
+    function addNote() {
+      const text = input.value.trim();
+      if (!text) return;
+      const notes = load();
+      notes.unshift({ id: Date.now() + '-' + Math.random().toString(36).slice(2), text, ts: Date.now() });
+      save(notes);
+      input.value = '';
+      saveBtn.disabled = true;
+      render();
+      input.focus();
+    }
+
+    function removeNote(id) {
+      save(load().filter(n => n.id !== id));
+      render();
+    }
+
+    saveBtn.addEventListener('click', addNote);
+    input.addEventListener('input', () => { saveBtn.disabled = input.value.trim() === ''; });
+    input.addEventListener('keydown', e => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); addNote(); }
+    });
+    clearBtn.addEventListener('click', () => {
+      if (confirm('Delete all notes? This cannot be undone.')) {
+        localStorage.removeItem(STORAGE_KEY);
+        render();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
