@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>My Notes — saved in your browser</title>
+  <title>My Stock Portfolio</title>
   <style>
     :root {
       --bg: #f6f7f9;
@@ -14,6 +14,8 @@
       --accent: #2563eb;
       --accent-hover: #1d4ed8;
       --danger: #dc2626;
+      --up: #16a34a;
+      --down: #dc2626;
       --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
     }
     @media (prefers-color-scheme: dark) {
@@ -26,93 +28,112 @@
         --accent: #3b82f6;
         --accent-hover: #60a5fa;
         --danger: #ef4444;
+        --up: #22c55e;
+        --down: #ef4444;
         --shadow: 0 1px 3px rgba(0,0,0,.4);
       }
     }
     * { box-sizing: border-box; }
     body {
       font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: 24px 16px;
-      line-height: 1.5;
+      background: var(--bg); color: var(--text);
+      margin: 0; padding: 24px 16px; line-height: 1.5;
     }
-    .wrap { max-width: 640px; margin: 0 auto; }
+    .wrap { max-width: 860px; margin: 0 auto; }
     h1 { font-size: 22px; margin: 0 0 4px; }
     .sub { color: var(--muted); font-size: 13px; margin: 0 0 20px; }
+
+    .summary {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;
+    }
+    .stat {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px; box-shadow: var(--shadow);
+    }
+    .stat .label { color: var(--muted); font-size: 12px; }
+    .stat .value { font-size: 20px; font-weight: 700; margin-top: 4px; }
+
     .composer {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-      box-shadow: var(--shadow);
-      margin-bottom: 20px;
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px; box-shadow: var(--shadow); margin-bottom: 20px;
     }
-    textarea {
-      width: 100%;
-      border: none;
-      resize: vertical;
-      min-height: 70px;
-      background: transparent;
-      color: var(--text);
-      font: inherit;
-      outline: none;
-      padding: 4px;
+    .fields { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr auto; gap: 10px; align-items: end; }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+    input {
+      padding: 8px 10px; font-size: 14px; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--bg); color: var(--text); font: inherit; width: 100%;
     }
-    .row { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
-    .hint { color: var(--muted); font-size: 12px; }
-    button {
-      font: inherit;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 16px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 14px;
-    }
-    .btn-primary { background: var(--accent); color: #fff; }
+    input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+    button { font: inherit; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .btn-primary { background: var(--accent); color: #fff; padding: 9px 18px; font-size: 14px; }
     .btn-primary:hover { background: var(--accent-hover); }
-    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .hint { color: var(--muted); font-size: 12px; margin-top: 10px; }
+
     .list-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
     .count { color: var(--muted); font-size: 13px; }
-    .btn-clear {
-      background: transparent; color: var(--danger); padding: 4px 8px; font-size: 13px;
-    }
+    .btn-clear { background: transparent; color: var(--danger); padding: 4px 8px; font-size: 13px; }
     .btn-clear:hover { text-decoration: underline; }
-    ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
-    li {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 14px;
-      box-shadow: var(--shadow);
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-    }
-    .note-body { flex: 1; min-width: 0; }
-    .note-text { white-space: pre-wrap; word-wrap: break-word; }
-    .note-time { color: var(--muted); font-size: 11px; margin-top: 6px; }
-    .del {
-      background: transparent; color: var(--muted); padding: 2px 6px; font-size: 18px; line-height: 1;
-      border-radius: 6px;
-    }
+
+    .table-wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; box-shadow: var(--shadow); }
+    table { width: 100%; border-collapse: collapse; min-width: 640px; }
+    th, td { padding: 10px 12px; text-align: right; font-size: 13px; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; }
+    td:first-child, th:first-child { text-align: left; }
+    tbody tr:last-child td { border-bottom: none; }
+    .ticker { font-weight: 700; }
+    .up { color: var(--up); }
+    .down { color: var(--down); }
+    .cur-input { width: 90px; text-align: right; padding: 5px 8px; }
+    .del { background: transparent; color: var(--muted); padding: 2px 8px; font-size: 18px; line-height: 1; border-radius: 6px; }
     .del:hover { color: var(--danger); background: rgba(220,38,38,.08); }
+    tfoot td { font-weight: 700; border-top: 2px solid var(--border); }
     .empty { text-align: center; color: var(--muted); padding: 32px 0; font-size: 14px; }
+
+    @media (max-width: 620px) {
+      .summary { grid-template-columns: 1fr; }
+      .fields { grid-template-columns: 1fr 1fr; }
+      .fields .field:nth-child(5) { grid-column: span 2; }
+      .fields .field:nth-child(5) button { width: 100%; }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>📝 My Notes</h1>
-    <p class="sub">Type anything below. It's saved in this browser and will still be here next time you open this page.</p>
+    <h1>📈 My Stock Portfolio</h1>
+    <p class="sub">Add your holdings below. Everything is saved in this browser and will still be here next time you open the page.</p>
+
+    <div class="summary">
+      <div class="stat"><div class="label">Cost Basis</div><div class="value" id="sumCost">$0.00</div></div>
+      <div class="stat"><div class="label">Market Value</div><div class="value" id="sumValue">$0.00</div></div>
+      <div class="stat"><div class="label">Total Gain / Loss</div><div class="value" id="sumGain">$0.00</div></div>
+    </div>
 
     <div class="composer">
-      <textarea id="input" placeholder="Write a note… (Ctrl/⌘ + Enter to save)"></textarea>
-      <div class="row">
-        <span class="hint">Stored locally on your device — nothing is uploaded.</span>
-        <button id="save" class="btn-primary" disabled>Save</button>
+      <div class="fields">
+        <div class="field">
+          <label for="ticker">Ticker</label>
+          <input id="ticker" placeholder="AAPL" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="shares">Shares</label>
+          <input id="shares" type="number" step="any" min="0" placeholder="10" />
+        </div>
+        <div class="field">
+          <label for="cost">Avg Cost</label>
+          <input id="cost" type="number" step="any" min="0" placeholder="150.00" />
+        </div>
+        <div class="field">
+          <label for="price">Current Price</label>
+          <input id="price" type="number" step="any" min="0" placeholder="175.00" />
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button id="add" class="btn-primary">Add</button>
+        </div>
       </div>
+      <div class="hint">Tip: you can edit each holding's <strong>Current Price</strong> later right in the table to update gains. Stored locally on your device — nothing is uploaded.</div>
     </div>
 
     <div class="list-head">
@@ -120,96 +141,152 @@
       <button id="clear" class="btn-clear" hidden>Clear all</button>
     </div>
 
-    <ul id="list"></ul>
-    <div class="empty" id="empty">No notes yet. Add your first one above.</div>
+    <div class="table-wrap" id="tableWrap" hidden>
+      <table>
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Shares</th>
+            <th>Avg Cost</th>
+            <th>Current</th>
+            <th>Cost Basis</th>
+            <th>Market Value</th>
+            <th>Gain / Loss</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+        <tfoot>
+          <tr>
+            <td>Total</td>
+            <td></td><td></td><td></td>
+            <td id="tCost">$0.00</td>
+            <td id="tValue">$0.00</td>
+            <td id="tGain">$0.00</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="empty" id="empty">No holdings yet. Add your first position above.</div>
   </div>
 
   <script>
-    const STORAGE_KEY = 'my_notes_v1';
-    const input = document.getElementById('input');
-    const saveBtn = document.getElementById('save');
-    const clearBtn = document.getElementById('clear');
-    const list = document.getElementById('list');
-    const empty = document.getElementById('empty');
-    const count = document.getElementById('count');
+    const STORAGE_KEY = 'my_portfolio_v1';
+    const $ = id => document.getElementById(id);
+    const tickerIn = $('ticker'), sharesIn = $('shares'), costIn = $('cost'), priceIn = $('price');
 
     function load() {
-      try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-      } catch (e) {
-        return [];
-      }
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+      catch (e) { return []; }
     }
-    function save(notes) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
-    }
+    function save(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
 
-    function fmt(ts) {
-      const d = new Date(ts);
-      return d.toLocaleString(undefined, {
-        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-      });
-    }
+    const money = n => (n < 0 ? '-$' : '$') + Math.abs(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const pct = n => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+    const cls = n => n > 0 ? 'up' : n < 0 ? 'down' : '';
 
     function render() {
-      const notes = load();
-      list.innerHTML = '';
-      empty.hidden = notes.length > 0;
-      clearBtn.hidden = notes.length === 0;
-      count.textContent = notes.length
-        ? notes.length + (notes.length === 1 ? ' note' : ' notes')
-        : '';
+      const holdings = load();
+      const rows = $('rows');
+      rows.innerHTML = '';
+      const has = holdings.length > 0;
+      $('empty').hidden = has;
+      $('tableWrap').hidden = !has;
+      $('clear').hidden = !has;
+      $('count').textContent = has ? holdings.length + (holdings.length === 1 ? ' holding' : ' holdings') : '';
 
-      notes.forEach(note => {
-        const li = document.createElement('li');
+      let totCost = 0, totValue = 0;
 
-        const body = document.createElement('div');
-        body.className = 'note-body';
-        const text = document.createElement('div');
-        text.className = 'note-text';
-        text.textContent = note.text;
-        const time = document.createElement('div');
-        time.className = 'note-time';
-        time.textContent = fmt(note.ts);
-        body.appendChild(text);
-        body.appendChild(time);
+      holdings.forEach(h => {
+        const shares = +h.shares || 0;
+        const cost = +h.cost || 0;
+        const price = h.price === '' || h.price == null ? null : +h.price;
+        const basis = shares * cost;
+        const value = price == null ? null : shares * price;
+        const gain = value == null ? null : value - basis;
+        const gainPct = value == null || basis === 0 ? null : (gain / basis) * 100;
+        totCost += basis;
+        if (value != null) totValue += value; else totValue += basis; // unpriced holdings count at cost
 
-        const del = document.createElement('button');
-        del.className = 'del';
-        del.textContent = '×';
-        del.title = 'Delete';
-        del.addEventListener('click', () => removeNote(note.id));
+        const tr = document.createElement('tr');
 
-        li.appendChild(body);
-        li.appendChild(del);
-        list.appendChild(li);
+        const gainCell = gain == null
+          ? '<span class="muted">—</span>'
+          : `<span class="${cls(gain)}">${money(gain)} (${pct(gainPct)})</span>`;
+
+        tr.innerHTML =
+          `<td class="ticker">${escapeHtml(h.ticker)}</td>` +
+          `<td>${shares.toLocaleString()}</td>` +
+          `<td>${money(cost)}</td>` +
+          `<td></td>` +
+          `<td>${money(basis)}</td>` +
+          `<td>${value == null ? '—' : money(value)}</td>` +
+          `<td>${gainCell}</td>` +
+          `<td><button class="del" title="Remove">×</button></td>`;
+
+        // editable current price input
+        const priceTd = tr.children[3];
+        const inp = document.createElement('input');
+        inp.type = 'number'; inp.step = 'any'; inp.min = '0';
+        inp.className = 'cur-input';
+        inp.value = price == null ? '' : price;
+        inp.placeholder = '—';
+        inp.addEventListener('change', () => {
+          const list = load();
+          const item = list.find(x => x.id === h.id);
+          if (item) { item.price = inp.value.trim() === '' ? '' : +inp.value; save(list); render(); }
+        });
+        priceTd.appendChild(inp);
+
+        tr.querySelector('.del').addEventListener('click', () => {
+          save(load().filter(x => x.id !== h.id));
+          render();
+        });
+
+        rows.appendChild(tr);
       });
+
+      const totGain = totValue - totCost;
+      const totGainPct = totCost === 0 ? 0 : (totGain / totCost) * 100;
+
+      $('tCost').textContent = money(totCost);
+      $('tValue').textContent = money(totValue);
+      $('tGain').innerHTML = `<span class="${cls(totGain)}">${money(totGain)} (${pct(totGainPct)})</span>`;
+
+      $('sumCost').textContent = money(totCost);
+      $('sumValue').textContent = money(totValue);
+      const sg = $('sumGain');
+      sg.textContent = `${money(totGain)} (${pct(totGainPct)})`;
+      sg.className = 'value ' + cls(totGain);
     }
 
-    function addNote() {
-      const text = input.value.trim();
-      if (!text) return;
-      const notes = load();
-      notes.unshift({ id: Date.now() + '-' + Math.random().toString(36).slice(2), text, ts: Date.now() });
-      save(notes);
-      input.value = '';
-      saveBtn.disabled = true;
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+
+    function add() {
+      const ticker = tickerIn.value.trim().toUpperCase();
+      const shares = sharesIn.value.trim();
+      const cost = costIn.value.trim();
+      const price = priceIn.value.trim();
+      if (!ticker) { tickerIn.focus(); return; }
+      if (shares === '' || +shares <= 0) { sharesIn.focus(); return; }
+      if (cost === '' || +cost < 0) { costIn.focus(); return; }
+
+      const list = load();
+      list.push({ id: Date.now() + '-' + Math.random().toString(36).slice(2), ticker, shares: +shares, cost: +cost, price: price === '' ? '' : +price });
+      save(list);
+      tickerIn.value = sharesIn.value = costIn.value = priceIn.value = '';
+      tickerIn.focus();
       render();
-      input.focus();
     }
 
-    function removeNote(id) {
-      save(load().filter(n => n.id !== id));
-      render();
-    }
-
-    saveBtn.addEventListener('click', addNote);
-    input.addEventListener('input', () => { saveBtn.disabled = input.value.trim() === ''; });
-    input.addEventListener('keydown', e => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); addNote(); }
-    });
-    clearBtn.addEventListener('click', () => {
-      if (confirm('Delete all notes? This cannot be undone.')) {
+    $('add').addEventListener('click', add);
+    [tickerIn, sharesIn, costIn, priceIn].forEach(el =>
+      el.addEventListener('keydown', e => { if (e.key === 'Enter') add(); }));
+    $('clear').addEventListener('click', () => {
+      if (confirm('Remove all holdings? This cannot be undone.')) {
         localStorage.removeItem(STORAGE_KEY);
         render();
       }
