@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0d10" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="看板" />
+    <meta name="description" content="Desk 看板：纽约时间、Reston 天气、美股自选行情" />
+    <title>Desk 看板</title>
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="topbar">
+        <div class="brand">Desk 看板</div>
+        <div class="status" id="status">加载中…</div>
+      </header>
+
+      <section class="hero">
+        <div class="tz">纽约时间 · America/New_York</div>
+        <div class="clock-row">
+          <div class="clock" id="clock">--:--</div>
+          <div class="seconds" id="seconds">--</div>
+          <div class="ampm" id="ampm"></div>
+        </div>
+        <div class="date" id="date">—</div>
+        <div class="weather" id="weather">
+          <div class="weather-main">
+            <div class="wx-emoji" id="wxEmoji">·</div>
+            <div class="wx-temp" id="wxTemp">--°</div>
+          </div>
+          <div class="wx-meta" id="wxMeta">正在拉 Reston, VA 天气…</div>
+        </div>
+      </section>
+
+      <div class="section-head">
+        <h2>自选股 Watchlist</h2>
+        <div class="src" id="quoteSrc"></div>
+      </div>
+      <div class="stocks" id="stocks"></div>
+
+      <p class="hint" id="installHint">
+        用 iPhone 的 Safari 打开这个页面，点底部分享按钮，再选「添加到主屏幕」，就能全屏当 app 用。
+      </p>
+      <p class="error" id="error"></p>
+    </div>
+    <script src="./app.js"></script>
+  </body>
+</html>
