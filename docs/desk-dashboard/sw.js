@@ -1,4 +1,4 @@
-const CACHE = "desk-dashboard-v1";
+const CACHE = "desk-dashboard-v2";
 const SHELL = [
   "./",
   "./index.html",

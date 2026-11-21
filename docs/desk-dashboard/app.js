@@ -23,35 +23,49 @@ const WEEKDAYS = ["周日", "周一", "周二", "周三", "周四", "周五", "�
 const MONTHS = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
 
 const WX = {
-  0: ["☀️", "晴"],
-  1: ["🌤️", "大部晴朗"],
-  2: ["⛅", "局部多云"],
-  3: ["☁️", "多云"],
-  45: ["🌫️", "雾"],
-  48: ["🌫️", "雾"],
-  51: ["🌦️", "毛毛雨"],
-  53: ["🌦️", "毛毛雨"],
-  55: ["🌦️", "毛毛雨"],
-  56: ["🌦️", "冻毛毛雨"],
-  57: ["🌦️", "冻毛毛雨"],
-  61: ["🌧️", "小雨"],
-  63: ["🌧️", "中雨"],
-  65: ["🌧️", "大雨"],
-  66: ["🌧️", "冻雨"],
-  67: ["🌧️", "冻雨"],
-  71: ["❄️", "小雪"],
-  73: ["❄️", "中雪"],
-  75: ["❄️", "大雪"],
-  77: ["❄️", "雪粒"],
-  80: ["🌧️", "阵雨"],
-  81: ["🌧️", "阵雨"],
-  82: ["🌧️", "强阵雨"],
-  85: ["❄️", "阵雪"],
-  86: ["❄️", "阵雪"],
-  95: ["⛈️", "雷雨"],
-  96: ["⛈️", "雷雨夹冰雹"],
-  99: ["⛈️", "强雷雨"],
+  0: ["sun", "晴"],
+  1: ["cloud-sun", "大部晴朗"],
+  2: ["cloud-sun", "局部多云"],
+  3: ["cloud", "多云"],
+  45: ["cloud-fog", "雾"],
+  48: ["cloud-fog", "雾"],
+  51: ["cloud-drizzle", "毛毛雨"],
+  53: ["cloud-drizzle", "毛毛雨"],
+  55: ["cloud-drizzle", "毛毛雨"],
+  56: ["cloud-drizzle", "冻毛毛雨"],
+  57: ["cloud-drizzle", "冻毛毛雨"],
+  61: ["cloud-rain", "小雨"],
+  63: ["cloud-rain", "中雨"],
+  65: ["cloud-rain", "大雨"],
+  66: ["cloud-rain", "冻雨"],
+  67: ["cloud-rain", "冻雨"],
+  71: ["cloud-snow", "小雪"],
+  73: ["cloud-snow", "中雪"],
+  75: ["cloud-snow", "大雪"],
+  77: ["cloud-snow", "雪粒"],
+  80: ["cloud-rain", "阵雨"],
+  81: ["cloud-rain", "阵雨"],
+  82: ["cloud-rain", "强阵雨"],
+  85: ["cloud-snow", "阵雪"],
+  86: ["cloud-snow", "阵雪"],
+  95: ["cloud-lightning", "雷雨"],
+  96: ["cloud-lightning", "雷雨夹冰雹"],
+  99: ["cloud-lightning", "强雷雨"],
 };
+
+
+const ICONS = {
+  sun: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>',
+  "cloud-sun": '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v2M4.93 4.93l1.41 1.41M2 12h2"/><path d="M10 9a4 4 0 0 1 7.46 1.5"/><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>',
+  cloud: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>',
+  "cloud-fog": '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14h14M4 18h10M4 22h14"/><path d="M17.5 8H16a5 5 0 0 0-9.8 1A4 4 0 0 0 4 16"/></svg>',
+  "cloud-drizzle": '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14.9A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.2"/><path d="M8 19v1M8 14v1M16 19v1M16 14v1M12 21v1M12 16v1"/></svg>',
+  "cloud-rain": '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14.9A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.2"/><path d="M16 14v6M8 14v6M12 16v6"/></svg>',
+  "cloud-snow": '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14.9A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.2"/><path d="M8 15h.01M8 19h.01M12 17h.01M12 21h.01M16 15h.01M16 19h.01"/></svg>',
+  "cloud-lightning": '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 .88 8.89"/><path d="M13 12l-3 7h4l-3 7"/></svg>',
+};
+
+
 
 const els = {
   clock: document.getElementById("clock"),
@@ -59,13 +73,15 @@ const els = {
   ampm: document.getElementById("ampm"),
   date: document.getElementById("date"),
   status: document.getElementById("status"),
-  wxEmoji: document.getElementById("wxEmoji"),
+  wxIcon: document.getElementById("wxIcon"),
   wxTemp: document.getElementById("wxTemp"),
+  wxCond: document.getElementById("wxCond"),
   wxMeta: document.getElementById("wxMeta"),
   stocks: document.getElementById("stocks"),
   quoteSrc: document.getElementById("quoteSrc"),
   error: document.getElementById("error"),
   installHint: document.getElementById("installHint"),
+  sessionLamp: document.getElementById("sessionLamp"),
 };
 
 let lastQuotesAt = 0;
@@ -103,7 +119,7 @@ function tickClock() {
   els.clock.textContent = `${p.hour}:${p.minute}`;
   els.seconds.textContent = p.second;
   els.ampm.textContent = p.dayPeriod === "AM" ? "AM" : "PM";
-  els.date.textContent = `${weekdayLabel(p.weekday)}  ${MONTHS[Number(p.month) - 1]}${Number(p.day)}日`;
+  els.date.textContent = `${weekdayLabel(p.weekday)} · ${MONTHS[Number(p.month) - 1]}${Number(p.day)}日`;
 }
 
 function formatAgo(ts) {
@@ -132,7 +148,11 @@ function updateStatus(marketStatus) {
   if (mkt) bits.push(mkt);
   if (ago) bits.push(ago);
   els.status.textContent = bits.join(" · ");
-  els.quoteSrc.textContent = lastQuoteSource ? `行情来自 ${lastQuoteSource}` : "";
+  if (els.sessionLamp) {
+    els.sessionLamp.classList.toggle("open", mkt === "开盘中");
+  }
+  const src = lastQuoteSource || "";
+  els.quoteSrc.textContent = src ? `今日 · ${src}` : "今日";
 }
 
 function parseNum(value) {
@@ -312,17 +332,18 @@ async function refreshWeather() {
     const cur = data.current || {};
     const daily = data.daily || {};
     const code = cur.weather_code;
-    const [emoji, label] = WX[code] || ["🌡️", "天气"];
+    const [icon, label] = WX[code] || ["cloud", "天气"];
     const temp = Math.round(cur.temperature_2m);
     const feel = Math.round(cur.apparent_temperature);
     const hi = daily.temperature_2m_max ? Math.round(daily.temperature_2m_max[0]) : "—";
     const lo = daily.temperature_2m_min ? Math.round(daily.temperature_2m_min[0]) : "—";
     const rh = cur.relative_humidity_2m;
-    els.wxEmoji.textContent = emoji;
+    if (els.wxIcon) els.wxIcon.innerHTML = ICONS[icon] || ICONS.cloud;
     els.wxTemp.textContent = `${temp}°`;
-    els.wxMeta.innerHTML = `<strong>Reston, VA</strong><br>${label} · 体感 ${feel}°F<br>今天 ${hi}° / ${lo}° · 湿度 ${rh}%`;
+    if (els.wxCond) els.wxCond.textContent = label;
+    els.wxMeta.textContent = `Reston, VA · 体感 ${feel}° · 今天 ${hi}° / ${lo}° · 湿度 ${rh}%`;
   } catch (err) {
-    els.wxMeta.textContent = "天气暂时拉不到，待会再试。";
+    els.wxMeta.textContent = "天气暂时拉不到，待会再试";
     console.warn(err);
   }
 }
