@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-20T16:45:48.771162-05:00",
+  "updated": "2026-11-20T20:34:18.503674-05:00",
   "source": "CNBC",
   "marketStatus": "POST_MKT",
   "quotes": {
@@ -10,9 +10,9 @@
       "previousClose": 25.55,
       "marketStatus": "POST_MKT",
       "extended": {
-        "price": 23.88,
-        "change": 0.61,
-        "changePercent": 2.62
+        "price": 24.1,
+        "change": 0.83,
+        "changePercent": 3.57
       }
     },
     "APP": {
@@ -22,9 +22,9 @@
       "previousClose": 379.02,
       "marketStatus": "POST_MKT",
       "extended": {
-        "price": 351.5,
-        "change": 3.21,
-        "changePercent": 0.92
+        "price": 351.0,
+        "change": 2.71,
+        "changePercent": 0.78
       }
     },
     "CRDO": {
@@ -34,9 +34,9 @@
       "previousClose": 117.76,
       "marketStatus": "POST_MKT",
       "extended": {
-        "price": 102.64,
-        "change": 2.78,
-        "changePercent": 2.78
+        "price": 104.0,
+        "change": 4.14,
+        "changePercent": 4.15
       }
     },
     "SPY": {
@@ -46,9 +46,9 @@
       "previousClose": 715.87,
       "marketStatus": "POST_MKT",
       "extended": {
-        "price": 693.81,
-        "change": 4.0,
-        "changePercent": 0.58
+        "price": 697.49,
+        "change": 7.68,
+        "changePercent": 1.11
       }
     },
     "TSLA": {
@@ -58,9 +58,9 @@
       "previousClose": 374.41,
       "marketStatus": "POST_MKT",
       "extended": {
-        "price": 349.26,
-        "change": 3.44,
-        "changePercent": 0.99
+        "price": 351.1,
+        "change": 5.28,
+        "changePercent": 1.53
       }
     },
     "NCLD": {
@@ -70,9 +70,9 @@
       "previousClose": 11.83,
       "marketStatus": "POST_MKT",
       "extended": {
-        "price": 10.43,
-        "change": 0.28,
-        "changePercent": 2.76
+        "price": 10.5,
+        "change": 0.35,
+        "changePercent": 3.45
       }
     },
     "AVGO": {
@@ -82,9 +82,9 @@
       "previousClose": 346.65,
       "marketStatus": "POST_MKT",
       "extended": {
-        "price": 308.6,
-        "change": 4.19,
-        "changePercent": 1.38
+        "price": 311.5,
+        "change": 7.09,
+        "changePercent": 2.33
       }
     },
     "VST": {
@@ -94,9 +94,9 @@
       "previousClose": 124.15,
       "marketStatus": "POST_MKT",
       "extended": {
-        "price": 116.8,
-        "change": 1.55,
-        "changePercent": 1.34
+        "price": 116.75,
+        "change": 1.5,
+        "changePercent": 1.3
       }
     },
     "AAOI": {
@@ -106,9 +106,9 @@
       "previousClose": 39.46,
       "marketStatus": "POST_MKT",
       "extended": {
-        "price": 33.69,
-        "change": 0.76,
-        "changePercent": 2.31
+        "price": 33.82,
+        "change": 0.89,
+        "changePercent": 2.7
       }
     },
     "CRCL": {
@@ -118,9 +118,9 @@
       "previousClose": 51.88,
       "marketStatus": "POST_MKT",
       "extended": {
-        "price": 48.21,
-        "change": 0.7,
-        "changePercent": 1.47
+        "price": 48.95,
+        "change": 1.44,
+        "changePercent": 3.03
       }
     },
     "RKLB": {
@@ -130,9 +130,9 @@
       "previousClose": 50.99,
       "marketStatus": "POST_MKT",
       "extended": {
-        "price": 47.07,
-        "change": 1.65,
-        "changePercent": 3.63
+        "price": 47.4,
+        "change": 1.98,
+        "changePercent": 4.35
       }
     },
     "DRAM": {
@@ -142,9 +142,9 @@
       "previousClose": 38.43,
       "marketStatus": "POST_MKT",
       "extended": {
-        "price": 34.01,
-        "change": 0.65,
-        "changePercent": 1.94
+        "price": 34.45,
+        "change": 1.09,
+        "changePercent": 3.27
       }
     }
   }
