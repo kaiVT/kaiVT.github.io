@@ -1,14 +1,14 @@
 {
-  "updated": "2026-11-26T19:00:03.482272-05:00",
+  "updated": "2026-11-27T02:57:18.396158-05:00",
   "source": "CNBC",
-  "marketStatus": "POST_MKT",
+  "marketStatus": "REG_MKT",
   "quotes": {
     "ASTS": {
       "price": 26.02,
       "change": 2.42,
       "changePercent": 10.25,
-      "previousClose": 23.6,
-      "marketStatus": "POST_MKT",
+      "previousClose": 26.02,
+      "marketStatus": "REG_MKT",
       "extended": {
         "price": 26.98,
         "change": 0.96,
@@ -19,8 +19,8 @@
       "price": 378.95,
       "change": -2.16,
       "changePercent": -0.57,
-      "previousClose": 381.11,
-      "marketStatus": "POST_MKT",
+      "previousClose": 378.95,
+      "marketStatus": "REG_MKT",
       "extended": {
         "price": 381.89,
         "change": 2.94,
@@ -31,8 +31,8 @@
       "price": 106.8,
       "change": 0.34,
       "changePercent": 0.31,
-      "previousClose": 106.46,
-      "marketStatus": "POST_MKT",
+      "previousClose": 106.8,
+      "marketStatus": "REG_MKT",
       "extended": {
         "price": 109.07,
         "change": 2.28,
@@ -43,8 +43,8 @@
       "price": 716.7,
       "change": -2.08,
       "changePercent": -0.29,
-      "previousClose": 718.78,
-      "marketStatus": "POST_MKT",
+      "previousClose": 716.7,
+      "marketStatus": "REG_MKT",
       "extended": {
         "price": 720.43,
         "change": 3.73,
@@ -55,8 +55,8 @@
       "price": 380.14,
       "change": -4.54,
       "changePercent": -1.18,
-      "previousClose": 384.68,
-      "marketStatus": "POST_MKT",
+      "previousClose": 380.14,
+      "marketStatus": "REG_MKT",
       "extended": {
         "price": 383.23,
         "change": 3.09,
@@ -67,8 +67,8 @@
       "price": 10.62,
       "change": -0.08,
       "changePercent": -0.75,
-      "previousClose": 10.7,
-      "marketStatus": "POST_MKT",
+      "previousClose": 10.62,
+      "marketStatus": "REG_MKT",
       "extended": {
         "price": 10.99,
         "change": 0.37,
@@ -79,8 +79,8 @@
       "price": 300.86,
       "change": -0.22,
       "changePercent": -0.07,
-      "previousClose": 301.08,
-      "marketStatus": "POST_MKT",
+      "previousClose": 300.86,
+      "marketStatus": "REG_MKT",
       "extended": {
         "price": 304.0,
         "change": 3.14,
@@ -91,8 +91,8 @@
       "price": 121.32,
       "change": 0.6,
       "changePercent": 0.5,
-      "previousClose": 120.72,
-      "marketStatus": "POST_MKT",
+      "previousClose": 121.32,
+      "marketStatus": "REG_MKT",
       "extended": {
         "price": 122.5,
         "change": 1.18,
@@ -103,8 +103,8 @@
       "price": 37.02,
       "change": -1.38,
       "changePercent": -3.59,
-      "previousClose": 38.4,
-      "marketStatus": "POST_MKT",
+      "previousClose": 37.02,
+      "marketStatus": "REG_MKT",
       "extended": {
         "price": 38.1,
         "change": 1.08,
@@ -115,8 +115,8 @@
       "price": 48.27,
       "change": 0.55,
       "changePercent": 1.15,
-      "previousClose": 47.72,
-      "marketStatus": "POST_MKT",
+      "previousClose": 48.27,
+      "marketStatus": "REG_MKT",
       "extended": {
         "price": 48.86,
         "change": 0.59,
@@ -127,8 +127,8 @@
       "price": 47.02,
       "change": 1.04,
       "changePercent": 2.26,
-      "previousClose": 45.98,
-      "marketStatus": "POST_MKT",
+      "previousClose": 47.02,
+      "marketStatus": "REG_MKT",
       "extended": {
         "price": 48.26,
         "change": 1.24,
@@ -140,7 +140,7 @@
       "change": -1.09,
       "changePercent": -3.03,
       "previousClose": 35.92,
-      "marketStatus": "POST_MKT",
+      "marketStatus": "REG_MKT",
       "extended": {
         "price": 35.71,
         "change": 0.88,
